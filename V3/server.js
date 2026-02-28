@@ -1,11 +1,7 @@
-// adaptons ce fichier pour utiliser notre app Express.js
-
 const http = require('http');
 const app = require('./app');
 
 const server = http.createServer(app);
-
-// Prevoyons une fonction pour normaliser le port en vue du deploiement.
 
 const normalizePort = val => {
   const port = parseInt(val, 10);
@@ -19,8 +15,6 @@ const normalizePort = val => {
   return false;
 };
 const port = normalizePort(process.env.PORT ||'3000');
-
-// Prevoyons une fonction pour gérer les erreurs de serveur.
 
 const errorHandler = error => {
   if (error.syscall !== 'listen') {
@@ -48,7 +42,6 @@ server.on('listening', () => {
   const bind = typeof address === 'string' ? 'pipe ' + address : 'port ' + port;
   console.log('Listening on ' + bind);
 });
-
 
 app.set('port', port);
 server.listen(port);
