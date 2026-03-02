@@ -5,6 +5,7 @@ const express = require('express');
 const app = express();
 
 // Configuration de la base de données MySQL
+
 const connexion = mysql.createPool({
   host: 'localhost',
   user: 'root',
@@ -63,5 +64,43 @@ app.post('/recettes', async (req, res, next) => {
     res.status(500).json({ error: 'Erreur serveur lors de l\'insertion.' });
   }
 });
+
+// Route pour mettre à jour une recette par ID
+
+app.put('/recettes/:id', async (req, res, next) => {
+  try {
+    let { title, description, imageUrl, etapes, userId } = req.body || {};
+    title = title || 'untitled';
+    description = description || 'no description';
+    let etapesJson = JSON.stringify(etapes) || '[]';
+    userId = userId || '0';
+
+    // Requête préparée pour insérer la recette
+    const sql = 'UPDATE recettes SET title = ?, description = ?, imageUrl = ?, etapes = ?, userId = ? WHERE id = ?';
+    let params = [title, description, imageUrl || null, etapesJson, userId, req.params.id];
+    const [result] = await connexion.execute(sql, params);
+    res.status(201).json({ message: 'Recette mise à jour avec succès !', insertId: result.insertId });
+  } catch (err) {
+    console.error('Erreur POST /recettes:', err);
+    res.status(500).json({ error: 'Erreur serveur lors de la mise à jour.' });
+  }
+});
+
+// Route pour supprimer une recette par ID
+
+app.delete('/recettes/:id', async (req, res, next) => {
+  try {
+    const sql = 'DELETE FROM recettes WHERE id = ?';
+    const [result] = await connexion.execute(sql, [req.params.id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Recette non trouvée' });
+    }
+    res.status(200).json({ message: 'Recette supprimée avec succès !' });
+  } catch (err) {
+    console.error('Erreur DELETE /recettes/:id:', err);
+    res.status(500).json({ error: 'Erreur serveur lors de la suppression.' });
+  }
+});
+
 
 module.exports = app;
