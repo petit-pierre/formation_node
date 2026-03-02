@@ -11,6 +11,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// Ci-dessous, nous utilisons express.json() et express.text() pour permettre à notre application de traiter les données JSON et les données textuelles envoyées dans le corps des requêtes HTTP. 
+// Cela est particulièrement utile pour les requêtes POST, PUT ou PATCH où les clients envoient des données au serveur.
+
 app.use(express.json());
 app.use(express.text());
 
