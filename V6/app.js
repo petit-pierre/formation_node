@@ -27,6 +27,8 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.text());
 
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
 // Routes pour les recettes
 
 app.use("/recettes", recettesRoutes);

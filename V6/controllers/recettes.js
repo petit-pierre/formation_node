@@ -1,4 +1,5 @@
 const connexion = require('../db');
+const fs = require('fs');
 
 // On renseigne sur les méthodes autorisées pour la route /recettes
 
@@ -73,11 +74,38 @@ exports.getRecettes = async (req, res, next) => {
 // Mise à jour d'une recette existante
 exports.putRecettes = async (req, res, next) => {
   try {
-    let { title, description, imageUrl, etapes, userId } = req.body || {};
+    // déterminer l'objet envoyé
+    const recetteObject = req.file
+      ? { ...JSON.parse(req.body.recette), imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}` }
+      : { ...req.body };
+
+    // récupérer la recette existante pour vérifier l'appartenance
+    const [rows] = await connexion.execute('SELECT userId FROM recettes WHERE id = ?', [req.params.id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Recette non trouvée' });
+    }
+    if (rows[0].userId != req.auth.userId) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    // préparer les champs mis à jour
+    let { title, description, imageUrl, etapes } = recetteObject;
     title = title || 'untitled';
     description = description || 'no description';
     let etapesJson = JSON.stringify(etapes) || '[]';
-    userId = userId || '0';
+    const userId = rows[0].userId; // on conserve l'utilisateur original
+
+    // if a new image is provided and there was a previous one, delete the old file
+    if (req.file) {
+      // retrieve old image URL to remove file
+      const [oldRows] = await connexion.execute('SELECT imageUrl FROM recettes WHERE id = ?', [req.params.id]);
+      if (oldRows.length && oldRows[0].imageUrl) {
+        const filename = oldRows[0].imageUrl.split('/images/')[1];
+        fs.unlink(`images/${filename}`, (err) => {
+          if (err) console.warn('Erreur suppression image ancienne:', err);
+        });
+      }
+    }
 
     const sql = 'UPDATE recettes SET title = ?, description = ?, imageUrl = ?, etapes = ?, userId = ? WHERE id = ?';
     const params = [title, description, imageUrl || null, etapesJson, userId, req.params.id];
@@ -92,6 +120,15 @@ exports.putRecettes = async (req, res, next) => {
 // Suppression d'une recette
 exports.deleteRecettes = async (req, res, next) => {
   try {
+    // delete image file if exists
+    const [rows] = await connexion.execute('SELECT imageUrl FROM recettes WHERE id = ?', [req.params.id]);
+    if (rows.length && rows[0].imageUrl) {
+      const filename = rows[0].imageUrl.split('/images/')[1];
+      fs.unlink(`images/${filename}`, (err) => {
+        if (err) console.warn('Erreur suppression image lors de delete:', err);
+      });
+    }
+
     const sql = 'DELETE FROM recettes WHERE id = ?';
     const [result] = await connexion.execute(sql, [req.params.id]);
     if (result.affectedRows === 0) {
