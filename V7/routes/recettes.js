@@ -1,24 +1,14 @@
 const express = require("express");
 const recettesCtrl = require("../controllers/recettes.js");
 const auth = require("../middleware/auth");
-
-// Importation du middleware multer pour gérer les fichiers uploadés
-
-const multer = require('../middleware/multer-config');
+const multer = require("../middleware/multer-config");
 const router = express.Router();
 
 router.options("/", recettesCtrl.optionsRecettes);
-
-// Utilisation du middleware multer pour les routes de création et de modification des recettes
-
 router.post("/", auth, multer, recettesCtrl.createRecettes);
-
 router.get("/:id", recettesCtrl.getRecette);
-
 router.get("/", recettesCtrl.getRecettes);
-
 router.put("/:id", auth, multer, recettesCtrl.putRecettes);
-
 router.delete("/:id", auth, recettesCtrl.deleteRecettes);
 
 module.exports = router;

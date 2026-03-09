@@ -1,23 +1,12 @@
-const mysql = require('mysql2/promise');
 const express = require('express');
 const app = express();
-
-// On importe path pour gérer les chemins de fichiers
-
 const path = require("path");
-
-// Faisons un peu de ménage et organisons notre code en plusieurs fichiers :
-
 const recettesRoutes = require("./routes/recettes");
 const usersRoutes = require("./routes/users");
 
-// charger les variables d'environnement depuis .env
-
-require('dotenv').config();
-
-// pool de connexions centralisé
-
-const connexion = require('./db');
+// Ajoutons deux nouvelles routes pour les infos et le s3
+const s3Routes = require("./routes/s3");
+const infosRoutes = require("./routes/infos");
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -29,12 +18,12 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.text());
 
-// Routes pour les recettes
-
 app.use("/recettes", recettesRoutes);
-
-// Routes pour les utilisateurs (authentification, etc.)
-
 app.use("/users", usersRoutes);
+
+// Utilisation des nouvelles routes
+
+app.use("/s3", s3Routes);
+app.use("/", infosRoutes);
 
 module.exports = app;
