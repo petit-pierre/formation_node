@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 const app = express();
 const path = require("path");
 const recettesRoutes = require("./routes/recettes");
@@ -9,9 +9,15 @@ const s3Routes = require("./routes/s3");
 const infosRoutes = require("./routes/infos");
 
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content, Accept, Content-Type, Authorization",
+  );
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS",
+  );
   next();
 });
 
