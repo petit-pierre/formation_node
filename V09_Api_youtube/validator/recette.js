@@ -1,6 +1,3 @@
-// npm install zod
-
-const { youtube } = require("googleapis/build/src/apis/youtube");
 const { z } = require("zod");
 
 const recetteSchema = z.object({

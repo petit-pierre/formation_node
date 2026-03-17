@@ -1,6 +1,3 @@
-// npm install zod
-
-const { youtube } = require("googleapis/build/src/apis/youtube");
 const { z } = require("zod");
 
 const recetteSchema = z.object({
@@ -48,8 +45,6 @@ const recetteSchema = z.object({
         "Le nom de l'image doit être une chaîne de caractères",
     })
     .optional(),
-
-  // Ajoutons la validation pour l'ID YouTube, qui est optionnel mais doit être une chaîne de caractères si présent
 
   youtube: z
     .string({

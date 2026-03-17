@@ -1,6 +1,5 @@
 const express = require("express");
 const app = express();
-const path = require("path");
 const recettesRoutes = require("./routes/recettes");
 const usersRoutes = require("./routes/users");
 const s3Routes = require("./routes/s3");
@@ -20,7 +19,7 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-app.use(express.text());
+// app.use(express.text());
 
 app.use("/recettes", recettesRoutes);
 app.use("/users", usersRoutes);
