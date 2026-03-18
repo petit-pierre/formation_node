@@ -28,6 +28,10 @@ exports.createRecettes = async (req, res) => {
         .json({ errors: validation.error.flatten().fieldErrors });
     }
 
+    validation.data.imageUrl = null;
+    validation.data.imageName = null;
+    validation.data.youtube = null;
+
     const newId = await Recette.create({
       ...validation.data,
       userId: req.auth.userId,
@@ -122,6 +126,8 @@ exports.putRecettes = async (req, res) => {
     // 4. Déterminer le statut (si nouveau fichier, on repasse en pending)
     const nouveauStatut = req.file ? "pending" : ancienneRecette.status;
 
+    const oldRecette = await Recette.findById(req.params.id);
+
     // 5. Mise à jour via le Modèle (Reset des URLs si nouveau fichier)
     await Recette.update(req.params.id, {
       title,
@@ -136,7 +142,7 @@ exports.putRecettes = async (req, res) => {
         action: "UPDATE",
         recetteId: req.params.id,
         filePath: req.file.path,
-        fileName: req.file.filename,
+        fileName: req.filename,
         mimetype: req.file.mimetype,
         title: title,
         // On passe les anciens IDs pour que le worker nettoie S3/YouTube
@@ -146,6 +152,13 @@ exports.putRecettes = async (req, res) => {
 
       return res.status(202).json({
         message: "Texte mis à jour, traitement du nouveau média en cours...",
+      });
+    } else {
+      await videoQueue.add("cleanup-media", {
+        action: "DELETE",
+        recetteId: req.params.id,
+        oldS3Name: oldRecette.imageName,
+        oldYoutubeId: oldRecette.youtube,
       });
     }
 
