@@ -1,10 +1,6 @@
-// voici le worker qui va traiter les vidéos et images en tâche de fond
-// il écoute la queue "video-processing" et traite les jobs un par un
-
 const { Worker } = require("bullmq");
 const fs = require("fs");
 const { connection } = require("../utils/videoQueue");
-const connexiondb = require("../utils/db");
 const youtube = require("../utils/youtubeConfig");
 const client = require("../utils/s3Config");
 const {
@@ -14,6 +10,8 @@ const {
 } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 require("dotenv").config({ path: "../.env" });
+
+const Recette = require("../models/recette");
 
 const worker = new Worker(
   "video-processing",
@@ -102,17 +100,17 @@ const addMedia = async (job) => {
       youtubeId = response.data.id;
     }
 
-    // --- MISE À JOUR BDD FINALE ---
-    const sql =
-      "UPDATE recettes SET imageUrl = ?, imageName = ?, youtube = ?, status = 'published' WHERE id = ?";
-    await connexiondb.execute(sql, [imageUrl, fileName, youtubeId, recetteId]);
+    // 3. BDD via le MODELE
+    await Recette.updateMediaSuccess(recetteId, {
+      imageUrl,
+      imageName: fileName,
+      youtubeId,
+    });
     return { success: true };
   } catch (error) {
     console.error(`Erreur Job ${job.id}:`, error.message);
-    await connexiondb.execute(
-      "UPDATE recettes SET status = 'error' WHERE id = ?",
-      [recetteId],
-    );
+    // BDD via le MODELE
+    await Recette.updateStatusError(recetteId);
     success = false;
     throw error;
   } finally {

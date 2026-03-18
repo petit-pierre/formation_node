@@ -1,88 +1,87 @@
+const Recette = require("../models/recette");
 const { videoQueue } = require("../utils/videoQueue");
-
-const connexion = require("../utils/db");
 const { recetteSchema } = require("../validator/recette");
 
-exports.optionsRecettes = (req, res) => {
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS",
-  );
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.status(200).json({
-    "post /":
-      "poster une recette, cette route est sécurisée par authentification",
-    "get /:id": "récupérer une recette par son id",
-    "get /": "récupérer toutes les recettes",
-    "put /:id":
-      "mettre à jour une recette par son id, cette route est sécurisée par authentification",
-    "delete /:id":
-      "supprimer une recette par son id, cette route est sécurisée par authentification",
-  });
-};
-
-exports.createRecettes = async (req, res, next) => {
+// GET ALL
+exports.getRecettes = async (req, res) => {
   try {
-    const recetteObject = JSON.parse(req.body.recette);
-    const userId = req.auth.userId;
-    const validation = recetteSchema.safeParse(recetteObject);
-    if (!validation.success) {
-      const formattedErrors = {};
-      validation.error.issues.forEach((issue) => {
-        formattedErrors[issue.path[0]] = issue.message;
-      });
-      return res.status(400).json({ errors: formattedErrors });
-    }
-    let {
-      title,
-      description,
-      imageUrl = null,
-      etapes,
-      imageName = null,
-      youtube = null,
-      status = "pending",
-    } = validation.data;
-
-    let etapesJson = JSON.stringify(etapes) || "[]";
-
-    const sql =
-      "INSERT INTO recettes (title, description, imageUrl, etapes, userId, imageName, youtube, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    const [result] = await connexion.execute(sql, [
-      title,
-      description,
-      imageUrl,
-      etapesJson,
-      userId,
-      imageName,
-      youtube,
-      status,
-    ]);
-
-    const newRecetteId = result.insertId;
-    await videoQueue.add("process-media", {
-      action: "CREATE",
-      recetteId: newRecetteId,
-      filePath: req.file.path, // Chemin vers le dossier temp/
-      fileName: req.fileName,
-      mimetype: req.file.mimetype,
-      title: validation.data.title, // On peut aussi passer le titre pour l'upload YouTube
-    });
-    res.status(202).json({ message: "Fichier reçu, traitement en cours..." });
+    const rows = await Recette.findAll();
+    const recettes = rows.map((r) => ({
+      ...r,
+      etapes: r.etapes ? JSON.parse(r.etapes) : [],
+    }));
+    res.status(200).json(recettes);
   } catch (err) {
-    console.error("Erreur createRecettes:", err);
-    res.status(500).json({ error: "Erreur serveur lors de l'insertion." });
+    res.status(500).json({ error: "Impossible de récupérer les recettes" });
   }
 };
 
-exports.getRecette = async (req, res, next) => {
+// CREATE
+exports.createRecettes = async (req, res) => {
   try {
-    const sql = "SELECT * FROM recettes WHERE id = ?";
-    const [rows] = await connexion.execute(sql, [req.params.id]);
-    if (rows.length === 0) {
+    const recetteObject = JSON.parse(req.body.recette);
+    const validation = recetteSchema.safeParse(recetteObject);
+
+    if (!validation.success) {
+      return res
+        .status(400)
+        .json({ errors: validation.error.flatten().fieldErrors });
+    }
+
+    const newId = await Recette.create({
+      ...validation.data,
+      userId: req.auth.userId,
+      etapes: JSON.stringify(validation.data.etapes) || "[]",
+      status: "pending",
+    });
+
+    await videoQueue.add("process-media", {
+      action: "CREATE",
+      recetteId: newId,
+      filePath: req.file.path,
+      fileName: req.fileName,
+      mimetype: req.file.mimetype,
+      title: validation.data.title,
+    });
+
+    res.status(202).json({ message: "Traitement en cours...", id: newId });
+  } catch (err) {
+    res.status(500).json({ error: "Erreur lors de l'insertion." });
+  }
+};
+
+// DELETE
+exports.deleteRecettes = async (req, res) => {
+  try {
+    const recette = await Recette.findById(req.params.id);
+    if (!recette) return res.status(404).json({ error: "Non trouvée" });
+
+    await videoQueue.add("cleanup-media", {
+      action: "DELETE",
+      recetteId: req.params.id,
+      oldS3Name: recette.imageName,
+      oldYoutubeId: recette.youtube,
+    });
+
+    await Recette.delete(req.params.id);
+    res.status(200).json({ message: "Supprimée, nettoyage Cloud lancé." });
+  } catch (err) {
+    res.status(500).json({ error: "Erreur lors de la suppression." });
+  }
+};
+
+// GET ONE BY ID
+exports.getRecette = async (req, res) => {
+  try {
+    const recette = await Recette.findById(req.params.id);
+
+    if (!recette) {
       return res.status(404).json({ error: "Recette non trouvée" });
     }
-    const recette = rows[0];
+
+    // Traitement des données pour le front
     recette.etapes = recette.etapes ? JSON.parse(recette.etapes) : [];
+
     res.status(200).json(recette);
   } catch (err) {
     console.error("Erreur getRecette:", err);
@@ -90,70 +89,48 @@ exports.getRecette = async (req, res, next) => {
   }
 };
 
-exports.getRecettes = async (req, res, next) => {
+// PUT (UPDATE)
+exports.putRecettes = async (req, res) => {
   try {
-    const [rows] = await connexion.query("SELECT * FROM recettes");
-    const recettes = rows.map((r) => ({
-      ...r,
-      etapes: r.etapes ? JSON.parse(r.etapes) : [],
-    }));
-    res.status(200).json(recettes);
-  } catch (err) {
-    console.error("Erreur getRecettes:", err);
-    res.status(500).json({ error: "Impossible de récupérer les recettes" });
-  }
-};
+    // 1. On récupère l'existant via le Modèle
+    const ancienneRecette = await Recette.findById(req.params.id);
 
-exports.putRecettes = async (req, res, next) => {
-  try {
-    // 1. On récupère d'abord l'état actuel de la recette pour vérifier l'auteur et les anciens médias
-    const [rows] = await connexion.execute(
-      "SELECT * FROM recettes WHERE id = ?",
-      [req.params.id],
-    );
-
-    if (rows.length === 0) {
+    if (!ancienneRecette) {
       return res.status(404).json({ error: "Recette non trouvée" });
     }
 
-    if (rows[0].userId != req.auth.userId) {
-      return res.status(401).json({ message: "Non autorisé" });
+    // 2. Vérification de l'auteur
+    if (ancienneRecette.userId != req.auth.userId) {
+      return res
+        .status(403)
+        .json({ message: "Non autorisé : vous n'êtes pas l'auteur." });
     }
 
-    // 2. Validation des données texte (Zod)
+    // 3. Validation Zod du texte
     const recetteObject = JSON.parse(req.body.recette);
     const validation = recetteSchema.safeParse(recetteObject);
 
     if (!validation.success) {
-      const formattedErrors = {};
-      validation.error.issues.forEach((issue) => {
-        formattedErrors[issue.path[0]] = issue.message;
-      });
-      return res.status(400).json({ errors: formattedErrors });
+      return res
+        .status(400)
+        .json({ errors: validation.error.flatten().fieldErrors });
     }
 
     const { title, description, etapes } = validation.data;
     const etapesJson = JSON.stringify(etapes) || "[]";
 
-    // 3. Mise à jour immédiate des textes en BDD
-    // Si un nouveau fichier arrive, on passe le statut en 'pending'
-    const status = req.file ? "pending" : rows[0].status;
+    // 4. Déterminer le statut (si nouveau fichier, on repasse en pending)
+    const nouveauStatut = req.file ? "pending" : ancienneRecette.status;
 
-    const sql = `
-      UPDATE recettes 
-      SET title = ?, description = ?,imageURL = NULL, etapes = ?,imageName = NULL,youtube = NULL, status = ? 
-      WHERE id = ?`;
-
-    await connexion.execute(sql, [
+    // 5. Mise à jour via le Modèle (Reset des URLs si nouveau fichier)
+    await Recette.update(req.params.id, {
       title,
       description,
-      etapesJson,
-      status,
-      req.params.id,
-    ]);
+      etapes: etapesJson,
+      status: nouveauStatut,
+    });
 
-    // 4. Gestion du média via le Worker
-    // On n'appelle le worker que si on a un nouveau fichier OU si on veut forcer un nettoyage
+    // 6. Gestion du média si un fichier est présent
     if (req.file) {
       await videoQueue.add("process-media", {
         action: "UPDATE",
@@ -162,9 +139,9 @@ exports.putRecettes = async (req, res, next) => {
         fileName: req.file.filename,
         mimetype: req.file.mimetype,
         title: title,
-        // On passe les anciens noms pour que le worker les supprime du Cloud
-        oldS3Name: rows[0].imageName,
-        oldYoutubeId: rows[0].youtube,
+        // On passe les anciens IDs pour que le worker nettoie S3/YouTube
+        oldS3Name: ancienneRecette.imageName,
+        oldYoutubeId: ancienneRecette.youtube,
       });
 
       return res.status(202).json({
@@ -172,50 +149,9 @@ exports.putRecettes = async (req, res, next) => {
       });
     }
 
-    // Si pas de fichier, on répond simplement OK
     res.status(200).json({ message: "Recette mise à jour avec succès !" });
   } catch (err) {
     console.error("Erreur putRecettes:", err);
     res.status(500).json({ error: "Erreur serveur lors de la mise à jour." });
-  }
-};
-
-exports.deleteRecettes = async (req, res, next) => {
-  try {
-    // 1. On récupère les infos du média AVANT de supprimer la ligne
-    const [rows] = await connexion.execute(
-      "SELECT imageName, youtube FROM recettes WHERE id = ?",
-      [req.params.id],
-    );
-
-    if (rows.length === 0) {
-      return res.status(404).json({ error: "Recette non trouvée" });
-    }
-
-    const { imageName, youtube: youtubeId } = rows[0];
-
-    // 2. On délègue le nettoyage au Worker
-    // On envoie les infos même si elles sont null, le worker gérera les "if"
-    await videoQueue.add("cleanup-media", {
-      action: "DELETE",
-      recetteId: req.params.id,
-      oldS3Name: imageName, // Correspond au nom attendu dans ton Worker
-      oldYoutubeId: youtubeId, // Correspond au nom attendu dans ton Worker
-    });
-
-    // 3. On supprime ensuite la ligne en BDD
-
-    const [result] = await connexion.execute(
-      "DELETE FROM recettes WHERE id = ?",
-      [req.params.id],
-    );
-
-    res.status(200).json({
-      message:
-        "Recette supprimée de la base. Nettoyage des médias en arrière-plan.",
-    });
-  } catch (err) {
-    console.error("Erreur deleteRecettes:", err);
-    res.status(500).json({ error: "Erreur serveur lors de la suppression." });
   }
 };
