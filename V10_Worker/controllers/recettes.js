@@ -104,89 +104,81 @@ exports.getRecettes = async (req, res, next) => {
   }
 };
 
-// exports.putRecettes = async (req, res, next) => {
-//   try {
-//     const recetteObject = req.file
-//       ? {
-//           ...JSON.parse(req.body.recette),
-//           imageUrl: req.fileUrl,
-//           imageName: req.fileName,
-//         }
-//       : { ...JSON.parse(req.body.recette) };
-//     const [rows] = await connexion.execute(
-//       "SELECT userId FROM recettes WHERE id = ?",
-//       [req.params.id],
-//     );
-//     if (rows.length === 0) {
-//       return res.status(404).json({ error: "Recette non trouvée" });
-//     }
-//     if (rows[0].userId != req.auth.userId) {
-//       return res.status(401).json({ message: "Not authorized" });
-//     }
-//     const validation = recetteSchema.safeParse(recetteObject);
-//     if (!validation.success) {
-//       const formattedErrors = {};
-//       validation.error.issues.forEach((issue) => {
-//         formattedErrors[issue.path[0]] = issue.message;
-//       });
-//       return res.status(400).json({ errors: formattedErrors });
-//     }
-//     let { title, description, imageUrl, etapes, imageName } = validation.data;
+exports.putRecettes = async (req, res, next) => {
+  try {
+    // 1. On récupère d'abord l'état actuel de la recette pour vérifier l'auteur et les anciens médias
+    const [rows] = await connexion.execute(
+      "SELECT * FROM recettes WHERE id = ?",
+      [req.params.id],
+    );
 
-//     let etapesJson = JSON.stringify(etapes) || "[]";
-//     const userId = rows[0].userId;
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Recette non trouvée" });
+    }
 
-//     const [oldRows] = await connexion.execute(
-//       "SELECT * FROM recettes WHERE id = ?",
-//       [req.params.id],
-//     );
-//     if (oldRows.length && oldRows[0].imageName) {
-//       try {
-//         const command = new DeleteObjectCommand({
-//           Bucket: "paris",
-//           Key: "grp5/" + oldRows[0].imageName,
-//         });
-//         await client.send(command);
-//       } catch (error) {
-//         res.status(500).json({ error: error.message });
-//         next(error);
-//       }
-//     }
+    if (rows[0].userId != req.auth.userId) {
+      return res.status(401).json({ message: "Non autorisé" });
+    }
 
-//     // suppression de la vidéo YouTube associée à l'ancienne recette si elle existe, pour éviter d'avoir des vidéos orphelines sur YouTube
+    // 2. Validation des données texte (Zod)
+    const recetteObject = JSON.parse(req.body.recette);
+    const validation = recetteSchema.safeParse(recetteObject);
 
-//     if (oldRows.length && oldRows[0].youtube) {
-//       try {
-//         await youtube.videos.delete({
-//           id: oldRows[0].youtube,
-//         });
-//       } catch (error) {
-//         console.error("Erreur suppression vidéo YouTube:", error);
-//         // On continue même si la suppression YouTube échoue, car ce n'est pas critique pour la mise à jour de la recette
-//       }
-//     }
-//     // On ajoute la gestion de l'ID YouTube si présent
+    if (!validation.success) {
+      const formattedErrors = {};
+      validation.error.issues.forEach((issue) => {
+        formattedErrors[issue.path[0]] = issue.message;
+      });
+      return res.status(400).json({ errors: formattedErrors });
+    }
 
-//     const youtubeId = req.youtubeId || null;
-//     const sql =
-//       "UPDATE recettes SET title = ?, description = ?, imageUrl = ?, etapes = ?, userId = ?, imageName = ?, youtube = ? WHERE id = ?";
-//     const params = [
-//       title,
-//       description,
-//       req.fileUrl || null,
-//       etapesJson,
-//       userId,
-//       req.fileName || null,
-//       youtubeId,
-//       req.params.id,
-//     ];
-//     await connexion.execute(sql, params);
-//     res.status(200).json({ message: "Recette mise à jour avec succès !" });
-//   } catch (err) {
-//     console.error("Erreur putRecettes:", err);
-//     res.status(500).json({ error: "Erreur serveur lors de la mise à jour." });
-//   }
-// };
+    const { title, description, etapes } = validation.data;
+    const etapesJson = JSON.stringify(etapes) || "[]";
+
+    // 3. Mise à jour immédiate des textes en BDD
+    // Si un nouveau fichier arrive, on passe le statut en 'pending'
+    const status = req.file ? "pending" : rows[0].status;
+
+    const sql = `
+      UPDATE recettes 
+      SET title = ?, description = ?,imageURL = NULL, etapes = ?,imageName = NULL,youtube = NULL, status = ? 
+      WHERE id = ?`;
+
+    await connexion.execute(sql, [
+      title,
+      description,
+      etapesJson,
+      status,
+      req.params.id,
+    ]);
+
+    // 4. Gestion du média via le Worker
+    // On n'appelle le worker que si on a un nouveau fichier OU si on veut forcer un nettoyage
+    if (req.file) {
+      await videoQueue.add("process-media", {
+        action: "UPDATE",
+        recetteId: req.params.id,
+        filePath: req.file.path,
+        fileName: req.file.filename,
+        mimetype: req.file.mimetype,
+        title: title,
+        // On passe les anciens noms pour que le worker les supprime du Cloud
+        oldS3Name: rows[0].imageName,
+        oldYoutubeId: rows[0].youtube,
+      });
+
+      return res.status(202).json({
+        message: "Texte mis à jour, traitement du nouveau média en cours...",
+      });
+    }
+
+    // Si pas de fichier, on répond simplement OK
+    res.status(200).json({ message: "Recette mise à jour avec succès !" });
+  } catch (err) {
+    console.error("Erreur putRecettes:", err);
+    res.status(500).json({ error: "Erreur serveur lors de la mise à jour." });
+  }
+};
 
 exports.deleteRecettes = async (req, res, next) => {
   try {
@@ -202,13 +194,7 @@ exports.deleteRecettes = async (req, res, next) => {
 
     const { imageName, youtube: youtubeId } = rows[0];
 
-    // 2. On supprime la ligne en BDD immédiatement
-    const [result] = await connexion.execute(
-      "DELETE FROM recettes WHERE id = ?",
-      [req.params.id],
-    );
-
-    // 3. On délègue le nettoyage au Worker
+    // 2. On délègue le nettoyage au Worker
     // On envoie les infos même si elles sont null, le worker gérera les "if"
     await videoQueue.add("cleanup-media", {
       action: "DELETE",
@@ -216,6 +202,13 @@ exports.deleteRecettes = async (req, res, next) => {
       oldS3Name: imageName, // Correspond au nom attendu dans ton Worker
       oldYoutubeId: youtubeId, // Correspond au nom attendu dans ton Worker
     });
+
+    // 3. On supprime ensuite la ligne en BDD
+
+    const [result] = await connexion.execute(
+      "DELETE FROM recettes WHERE id = ?",
+      [req.params.id],
+    );
 
     res.status(200).json({
       message:

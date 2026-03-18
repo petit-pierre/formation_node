@@ -1,3 +1,5 @@
+// Deportons la connection au S3
+
 const { S3Client } = require("@aws-sdk/client-s3");
 require("dotenv").config({ path: "../.env" });
 

@@ -8,7 +8,7 @@ router.options("/", recettesCtrl.optionsRecettes);
 router.post("/", auth, multer, recettesCtrl.createRecettes);
 router.get("/:id", recettesCtrl.getRecette);
 router.get("/", recettesCtrl.getRecettes);
-// router.put("/:id", auth, multer, recettesCtrl.putRecettes);
+router.put("/:id", auth, multer, recettesCtrl.putRecettes);
 router.delete("/:id", auth, recettesCtrl.deleteRecettes);
 
 module.exports = router;

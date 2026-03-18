@@ -13,6 +13,7 @@ const {
   DeleteObjectCommand,
 } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+require("dotenv").config({ path: "../.env" });
 
 const worker = new Worker(
   "video-processing",
@@ -62,10 +63,10 @@ const deletteMedia = async (job) => {
 
 const addMedia = async (job) => {
   const { recetteId, filePath, fileName, mimetype, title } = job.data;
+  let success = true;
   try {
     let imageUrl = null;
     let youtubeId = null;
-
     console.log("Upload vers S3...");
     await client.send(
       new PutObjectCommand({
@@ -82,7 +83,7 @@ const addMedia = async (job) => {
     imageUrl = await getSignedUrl(client, getCommand);
 
     // --- LOGIQUE VIDÉO (YOUTUBE) ---
-    if (mimetype.startsWith("video/")) {
+    if (mimetype.startsWith("video/") && job.attemptsMade < 1) {
       console.log("Upload vers YouTube...");
       const response = await youtube.videos.insert({
         part: "snippet,status",
@@ -105,13 +106,6 @@ const addMedia = async (job) => {
     const sql =
       "UPDATE recettes SET imageUrl = ?, imageName = ?, youtube = ?, status = 'published' WHERE id = ?";
     await connexiondb.execute(sql, [imageUrl, fileName, youtubeId, recetteId]);
-
-    // --- NETTOYAGE DU FICHIER TEMP ---
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-      console.log(`Fichier supprimé : ${filePath}`);
-    }
-
     return { success: true };
   } catch (error) {
     console.error(`Erreur Job ${job.id}:`, error.message);
@@ -119,13 +113,14 @@ const addMedia = async (job) => {
       "UPDATE recettes SET status = 'error' WHERE id = ?",
       [recetteId],
     );
+    success = false;
     throw error;
   } finally {
-    const isLastAttempt = job.attemptsMade >= (job.opts.attempts || 1);
-    if (isLastAttempt || !job.failedReason) {
-      if (fs.existsSync(filePath)) {
+    if (job.attemptsMade > 1 || success) {
+      try {
         fs.unlinkSync(filePath);
-        console.log(`Fichier supprimé : ${filePath}`);
+      } catch (e) {
+        console.error("Erreur suppression finale:", e.message);
       }
     }
   }

@@ -1,3 +1,5 @@
+// Deportons la connection a google pour l'Api youtube
+
 const { google } = require("googleapis");
 require("dotenv").config({ path: "../.env" });
 
