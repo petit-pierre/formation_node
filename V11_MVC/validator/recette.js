@@ -9,7 +9,6 @@ const recetteSchema = z.object({
     .max(100, "Le titre est trop long")
     .trim()
     .toLowerCase(),
-
   description: z
     .string({
       required_error: "La description est obligatoire",
@@ -19,14 +18,6 @@ const recetteSchema = z.object({
     .toLowerCase()
     .min(20, "La description doit contenir au moins 20 caractères")
     .max(500, "La description est trop longue"),
-
-  imageUrl: z
-    .string({
-      invalid_type_error: "L'URL de l'image doit être une chaîne de caractères",
-    })
-    .url("L'URL de l'image doit être valide")
-    .optional(),
-
   etapes: z
     .array(
       z
@@ -38,14 +29,12 @@ const recetteSchema = z.object({
         .trim(),
     )
     .min(1, "Il doit y avoir au moins une étape"),
-
   imageName: z
     .string({
       invalid_type_error:
         "Le nom de l'image doit être une chaîne de caractères",
     })
     .optional(),
-
   youtube: z
     .string({
       invalid_type_error: "L'ID YouTube doit être une chaîne de caractères",

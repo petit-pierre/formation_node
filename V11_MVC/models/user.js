@@ -7,7 +7,7 @@ const User = {
       "SELECT id, username, password FROM users WHERE username = ?",
       [username],
     );
-    return rows[0]; // Retourne l'utilisateur ou undefined
+    return rows[0];
   },
 
   // Créer un nouvel utilisateur

@@ -1,21 +1,14 @@
+require("dotenv").config({ path: "../.env" });
 const { Worker } = require("bullmq");
 const fs = require("fs");
 const { connection } = require("../utils/videoQueue");
 const youtube = require("../utils/youtubeConfig");
 const client = require("../utils/s3Config");
-const {
-  PutObjectCommand,
-  GetObjectCommand,
-  DeleteObjectCommand,
-} = require("@aws-sdk/client-s3");
-const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-require("dotenv").config({ path: "../.env" });
-
+const { PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const Recette = require("../models/recette");
 
 const worker = new Worker(
   "video-processing",
-
   async (job) => {
     console.log(
       `Traitement du job ${job.id} (Recette ${job.data.recetteId})...`,
@@ -63,24 +56,18 @@ const addMedia = async (job) => {
   const { recetteId, filePath, fileName, mimetype, title } = job.data;
   let success = true;
   try {
-    let imageUrl = null;
     let youtubeId = null;
+    // UPLOAD VERS S3
     console.log("Upload vers S3...");
     await client.send(
       new PutObjectCommand({
         Bucket: "paris",
         Key: `grp5/${fileName}`,
-        Body: fs.createReadStream(filePath), // On stream le fichier depuis le disque
+        Body: fs.createReadStream(filePath),
         ContentType: mimetype,
       }),
     );
-    const getCommand = new GetObjectCommand({
-      Bucket: "paris",
-      Key: `grp5/${fileName}`,
-    });
-    imageUrl = await getSignedUrl(client, getCommand);
-
-    // --- LOGIQUE VIDÉO (YOUTUBE) ---
+    // LOGIQUE VIDÉO (YOUTUBE)
     if (mimetype.startsWith("video/") && job.attemptsMade < 1) {
       console.log("Upload vers YouTube...");
       const response = await youtube.videos.insert({
@@ -94,15 +81,13 @@ const addMedia = async (job) => {
           status: { privacyStatus: "unlisted" },
         },
         media: {
-          body: fs.createReadStream(filePath), // Stream direct depuis le disque
+          body: fs.createReadStream(filePath),
         },
       });
       youtubeId = response.data.id;
     }
-
     // 3. BDD via le MODELE
     await Recette.updateMediaSuccess(recetteId, {
-      imageUrl,
       imageName: fileName,
       youtubeId,
     });

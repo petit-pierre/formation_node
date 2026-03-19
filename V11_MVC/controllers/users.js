@@ -21,20 +21,15 @@ exports.sign_up = async (req, res) => {
         .status(400)
         .json({ errors: validation.error.flatten().fieldErrors });
     }
-
     const { username, password } = validation.data;
-
-    // Utilisation du modèle pour vérifier l'existence
     const existingUser = await User.findByUsername(username);
     if (existingUser) {
       return res
         .status(409)
         .json({ error: "Ce nom d'utilisateur est déjà utilisé" });
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = await User.create(username, hashedPassword);
-
     res.status(201).json({
       message: "Utilisateur créé avec succès",
       userId,
@@ -45,7 +40,6 @@ exports.sign_up = async (req, res) => {
   }
 };
 
-// LOG IN
 exports.log_in = async (req, res) => {
   try {
     const validation = userSchema.safeParse(req.body);
@@ -54,27 +48,20 @@ exports.log_in = async (req, res) => {
         .status(400)
         .json({ errors: validation.error.flatten().fieldErrors });
     }
-
     const { username, password } = validation.data;
-
-    // Utilisation du modèle
     const user = await User.findByUsername(username);
     if (!user) {
       return res.status(401).json({ error: "Identifiants invalides" });
     }
-
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
       return res.status(401).json({ error: "Identifiants invalides" });
     }
-
-    // On génère le token (N'oublie pas de mettre ta clé secrète en variable d'environnement !)
     const token = jwt.sign(
       { userId: user.id },
       process.env.JWT_SECRET || "RANDOM_TOKEN_SECRET",
       { expiresIn: "24h" },
     );
-
     res.status(200).json({ token });
   } catch (err) {
     console.error("Erreur log_in:", err);

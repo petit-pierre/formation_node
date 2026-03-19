@@ -7,6 +7,7 @@ const {
 } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { GetObjectCommand } = require("@aws-sdk/client-s3");
+const client = require("../utils/s3Config");
 
 const MIME_TYPES = {
   "image/jpg": "jpg",
@@ -14,34 +15,6 @@ const MIME_TYPES = {
   "image/png": "png",
   "application/pdf": "pdf",
   "image/webp": "webp",
-};
-
-const client = new S3Client({
-  region: process.env.SCALEWAY_REGION,
-  endpoint: process.env.SCALEWAY_ENDPOINT,
-  credentials: {
-    accessKeyId: process.env.SCALEWAY_ACCESS_KEY,
-    secretAccessKey: process.env.SCALEWAY_SECRET_KEY,
-  },
-});
-
-exports.send = async (req, res) => {
-  if (!req.file) return res.status(400).send("Fichier manquant");
-  const name = req.file.originalname.split(" ").join("_").split(".")[0];
-  const extension = MIME_TYPES[req.file.mimetype];
-  const finalFileName = `${name}_${Date.now()}.${extension}`;
-  const command = new PutObjectCommand({
-    Bucket: "paris",
-    Key: `grp5/${finalFileName}`,
-    Body: req.file.buffer,
-    ContentType: req.file.mimetype,
-  });
-  try {
-    await client.send(command);
-    res.status(201).json({ message: "Upload réussi !", url: finalFileName });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
 };
 
 exports.listFolders = async (req, res, next) => {

@@ -9,7 +9,6 @@ const userSchema = z.object({
     })
     .trim()
     .toLowerCase(),
-
   password: z
     .string()
     .min(8, "Le mot de passe doit contenir au moins 8 caractères")

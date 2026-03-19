@@ -2,6 +2,24 @@ const Recette = require("../models/recette");
 const { videoQueue } = require("../utils/videoQueue");
 const { recetteSchema } = require("../validator/recette");
 
+exports.optionsRecettes = (req, res) => {
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS",
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.status(200).json({
+    "post /":
+      "poster une recette, cette route est sécurisée par authentification",
+    "get /:id": "récupérer une recette par son id",
+    "get /": "récupérer toutes les recettes",
+    "put /:id":
+      "mettre à jour une recette par son id, cette route est sécurisée par authentification",
+    "delete /:id":
+      "supprimer une recette par son id, cette route est sécurisée par authentification",
+  });
+};
+
 // GET ALL
 exports.getRecettes = async (req, res) => {
   try {
@@ -28,7 +46,6 @@ exports.createRecettes = async (req, res) => {
         .json({ errors: validation.error.flatten().fieldErrors });
     }
 
-    validation.data.imageUrl = null;
     validation.data.imageName = null;
     validation.data.youtube = null;
 
@@ -47,7 +64,6 @@ exports.createRecettes = async (req, res) => {
       mimetype: req.file.mimetype,
       title: validation.data.title,
     });
-
     res.status(202).json({ message: "Traitement en cours...", id: newId });
   } catch (err) {
     res.status(500).json({ error: "Erreur lors de l'insertion." });
@@ -66,7 +82,6 @@ exports.deleteRecettes = async (req, res) => {
       oldS3Name: recette.imageName,
       oldYoutubeId: recette.youtube,
     });
-
     await Recette.delete(req.params.id);
     res.status(200).json({ message: "Supprimée, nettoyage Cloud lancé." });
   } catch (err) {
@@ -78,14 +93,10 @@ exports.deleteRecettes = async (req, res) => {
 exports.getRecette = async (req, res) => {
   try {
     const recette = await Recette.findById(req.params.id);
-
     if (!recette) {
       return res.status(404).json({ error: "Recette non trouvée" });
     }
-
-    // Traitement des données pour le front
     recette.etapes = recette.etapes ? JSON.parse(recette.etapes) : [];
-
     res.status(200).json(recette);
   } catch (err) {
     console.error("Erreur getRecette:", err);
@@ -96,47 +107,31 @@ exports.getRecette = async (req, res) => {
 // PUT (UPDATE)
 exports.putRecettes = async (req, res) => {
   try {
-    // 1. On récupère l'existant via le Modèle
     const ancienneRecette = await Recette.findById(req.params.id);
-
     if (!ancienneRecette) {
       return res.status(404).json({ error: "Recette non trouvée" });
     }
-
-    // 2. Vérification de l'auteur
     if (ancienneRecette.userId != req.auth.userId) {
       return res
         .status(403)
         .json({ message: "Non autorisé : vous n'êtes pas l'auteur." });
     }
-
-    // 3. Validation Zod du texte
     const recetteObject = JSON.parse(req.body.recette);
     const validation = recetteSchema.safeParse(recetteObject);
-
     if (!validation.success) {
       return res
         .status(400)
         .json({ errors: validation.error.flatten().fieldErrors });
     }
-
     const { title, description, etapes } = validation.data;
     const etapesJson = JSON.stringify(etapes) || "[]";
-
-    // 4. Déterminer le statut (si nouveau fichier, on repasse en pending)
     const nouveauStatut = req.file ? "pending" : ancienneRecette.status;
-
-    const oldRecette = await Recette.findById(req.params.id);
-
-    // 5. Mise à jour via le Modèle (Reset des URLs si nouveau fichier)
     await Recette.update(req.params.id, {
       title,
       description,
       etapes: etapesJson,
       status: nouveauStatut,
     });
-
-    // 6. Gestion du média si un fichier est présent
     if (req.file) {
       await videoQueue.add("process-media", {
         action: "UPDATE",
@@ -149,7 +144,6 @@ exports.putRecettes = async (req, res) => {
         oldS3Name: ancienneRecette.imageName,
         oldYoutubeId: ancienneRecette.youtube,
       });
-
       return res.status(202).json({
         message: "Texte mis à jour, traitement du nouveau média en cours...",
       });
@@ -157,11 +151,10 @@ exports.putRecettes = async (req, res) => {
       await videoQueue.add("cleanup-media", {
         action: "DELETE",
         recetteId: req.params.id,
-        oldS3Name: oldRecette.imageName,
-        oldYoutubeId: oldRecette.youtube,
+        oldS3Name: ancienneRecette.imageName,
+        oldYoutubeId: ancienneRecette.youtube,
       });
     }
-
     res.status(200).json({ message: "Recette mise à jour avec succès !" });
   } catch (err) {
     console.error("Erreur putRecettes:", err);
