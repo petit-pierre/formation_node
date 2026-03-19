@@ -1,9 +1,28 @@
+require("dotenv").config({ path: "../.env" });
 const connexion = require("../utils/db");
+const client = require("../utils/s3Config");
+const { GetObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const Recette = {
   // Trouver toutes les recettes
   findAll: async () => {
     const [rows] = await connexion.query("SELECT * FROM recettes");
+    await Promise.all(
+      rows.map(async (row) => {
+        if (row.imageName) {
+          const getCommand = new GetObjectCommand({
+            Bucket: "paris",
+            Key: `grp5/${row.imageName}`,
+          });
+          // On met à jour directement la propriété imageUrl de l'objet row
+          // On peut spécifier la durée (ex: 3600 secondes pour 1h)
+          row.imageUrl = await getSignedUrl(client, getCommand, {
+            expiresIn: 3600,
+          });
+        }
+      }),
+    );
     return rows;
   },
 
@@ -13,6 +32,17 @@ const Recette = {
       "SELECT * FROM recettes WHERE id = ?",
       [id],
     );
+    if (rows[0].imageName) {
+      const getCommand = new GetObjectCommand({
+        Bucket: "paris",
+        Key: `grp5/${rows[0].imageName}`,
+      });
+      // On met à jour directement la propriété imageUrl de l'objet row
+      // On peut spécifier la durée (ex: 3600 secondes pour 1h)
+      rows[0].imageUrl = await getSignedUrl(client, getCommand, {
+        expiresIn: 3600,
+      });
+    }
     return rows[0];
   },
 
