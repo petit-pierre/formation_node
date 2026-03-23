@@ -1,4 +1,4 @@
-require("dotenv").config({ path: "../.env" });
+require("dotenv").config({ path: "./.env" });
 const connexion = require("../utils/db");
 const client = require("../utils/s3Config");
 const { GetObjectCommand } = require("@aws-sdk/client-s3");
@@ -99,6 +99,29 @@ const Recette = {
   updateStatusError: async (id) => {
     const sql = "UPDATE recettes SET status = 'error' WHERE id = ?";
     return await connexion.execute(sql, [id]);
+  },
+
+  // Validate : Marquer la recette en validé
+  updateStatusValidate: async (id) => {
+    const sql = "UPDATE recettes SET status = 'validate' WHERE id = ?";
+    return await connexion.execute(sql, [id]);
+  },
+
+  // Recupere les recette avec le status published
+  findPublished: async () => {
+    try {
+      const [rows] = await connexion.execute(
+        "SELECT * FROM recettes WHERE status = ?",
+        ["published"],
+      );
+      return rows;
+    } catch (err) {
+      console.error(
+        "Erreur lors de la récupération des recettes publiées:",
+        err,
+      );
+      throw err;
+    }
   },
 };
 

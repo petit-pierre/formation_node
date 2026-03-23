@@ -4,6 +4,7 @@
 // npm start --> demmare tout les services
 // npm stop --> stop tout les services
 // pm2 logs --> affiche les retours console
+// !! les chemain seront maintenant relatifs a la racine du repo !!
 
 const http = require("http");
 const app = require("./app");

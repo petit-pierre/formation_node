@@ -1,4 +1,4 @@
-require("dotenv").config({ path: "../.env" });
+require("dotenv").config({ path: "./.env" });
 const {
   S3Client,
   PutObjectCommand,
