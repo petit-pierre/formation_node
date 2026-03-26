@@ -26,12 +26,39 @@ const Recette = {
     return rows;
   },
 
+  // Trouver toutes les recettes validés
+  findAllValide: async () => {
+    const [rows] = await connexion.query(
+      "SELECT * FROM recettes WHERE status = 'visible'",
+    );
+    await Promise.all(
+      rows.map(async (row) => {
+        if (row.imageName) {
+          const getCommand = new GetObjectCommand({
+            Bucket: "paris",
+            Key: `grp5/${row.imageName}`,
+          });
+          // On met à jour directement la propriété imageUrl de l'objet row
+          // On peut spécifier la durée (ex: 3600 secondes pour 1h)
+          row.imageUrl = await getSignedUrl(client, getCommand, {
+            expiresIn: 3600,
+          });
+        }
+      }),
+    );
+    return rows;
+  },
+
   // Trouver une recette par ID
   findById: async (id) => {
     const [rows] = await connexion.execute(
       "SELECT * FROM recettes WHERE id = ?",
       [id],
     );
+    // 1. VERIFICATION CRITIQUE : Si rows[0] n'existe pas, on sort direct
+    if (!rows[0]) {
+      return null;
+    }
     if (rows[0].imageName) {
       const getCommand = new GetObjectCommand({
         Bucket: "paris",
@@ -120,6 +147,20 @@ const Recette = {
         "Erreur lors de la récupération des recettes publiées:",
         err,
       );
+      throw err;
+    }
+  },
+
+  // Modifier le status manuelement
+  patch: async (id, status) => {
+    try {
+      const [rows] = await connexion.execute(
+        "UPDATE recettes SET status = ? WHERE id = ?",
+        [status, id],
+      );
+      return rows;
+    } catch (err) {
+      console.error("Erreur lors de la modification du status", err);
       throw err;
     }
   },

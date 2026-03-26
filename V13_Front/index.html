@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Livre de recettes | Accueil</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="./cake.png" />
+  </head>
+  <body id="top">
+    <header class="navbar">
+      <nav>
+        <div>
+          <a href="#top"><strong>Cahier de recettes</strong></a>
+          <a href="#user-grid" class="userAnchor">
+            <span>| Gestion des utilisateurs</span>
+          </a>
+        </div>
+        <button id="openLoginModal" class="btn-login active btn">
+          <p>Connexion</p>
+        </button>
+        <button id="openLoginModal" class="btn-logout active btn">
+          <p>Deconnexion</p>
+        </button>
+      </nav>
+    </header>
+    <main>
+      <section class="hero">
+        <h1>Découvrez les meilleures recettes</h1>
+        <p>Cuisinez avec passion, partagez avec amour.</p>
+      </section>
+
+      <main class="container">
+        <div id="recipeGrid" class="recipe-grid"></div>
+        <div id="user-grid" class="user-grid"></div>
+      </main>
+    </main>
+    <div id="loginModal" class="loginModal">
+      <div class="modal-content">
+        <button class="close-modal"><p>&times;</p></button>
+        <h2>Connexion</h2>
+        <form id="loginForm">
+          <div class="input-group">
+            <label for="login">Login</label>
+            <input
+              type="text"
+              class="login"
+              placeholder="votre login"
+              required
+            />
+          </div>
+          <div class="input-group">
+            <label for="password">Mot de passe</label>
+            <input
+              type="password"
+              class="password"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+          <button type="button" class="btn btn-connection" tabindex="-1">
+            Se connecter
+          </button>
+          <p class="newChallenger">Pas encore de compte ?</p>
+          <button type="button" class="btn btn-insciption" tabindex="-1">
+            S'inscrire
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script src="./index.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,221 @@
+:root {
+  --green: #a2d897;
+  --lavender: #eee7ec;
+  --yellow: #ffb347;
+  --orange: #ef7b45;
+  --white: #ffffff;
+  --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: "Poppins", sans-serif;
+  h1 {
+    color: black;
+  }
+  a {
+    text-decoration: none;
+    color: black;
+  }
+  .btn {
+    background-color: #a2d897;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 25px;
+    transition: 0.3s;
+    opacity: 0.2;
+    &.active {
+      &:hover {
+        background-color: #ffb347;
+      }
+      cursor: pointer;
+      opacity: 1;
+    }
+  }
+  header {
+    background-color: var(--lavender);
+    padding: 1vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 5;
+    box-shadow: var(--shadow);
+    .userAnchor {
+      margin: auto;
+      margin-left: 2vw;
+      cursor: pointer;
+      display: none;
+    }
+    .btn-logout {
+      display: none;
+    }
+    .btn-login {
+      display: block;
+    }
+    &.admin {
+      .userAnchor {
+        display: block;
+      }
+    }
+    &.connected {
+      .btn-logout {
+        display: block;
+      }
+      .btn-login {
+        display: none;
+      }
+    }
+    nav {
+      min-height: 2vw;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      div {
+        display: flex;
+        margin: auto;
+        margin-left: 0;
+        strong {
+          font-size: 2vw;
+          font-weight: 900;
+        }
+      }
+    }
+  }
+  main {
+    padding: 2vw;
+    margin-top: 10vh;
+    transition: all 0.3s;
+    filter: blur(0px);
+    &.blured {
+      filter: blur(2px);
+    }
+    .recipe-grid {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 2vw;
+      justify-content: space-around;
+      .card {
+        box-shadow: var(--shadow);
+        position: relative;
+        width: 25vw;
+        height: 70vh;
+        overflow: hidden;
+        border-radius: 1vw;
+        background-color: #eee7ec;
+        .mini-btn {
+          width: 2vw;
+          border: none;
+          background-color: none;
+          margin: 1vw;
+          cursor: pointer;
+          border-radius: 1vw;
+          &:hover {
+            background: none;
+          }
+        }
+        img {
+          width: 100%;
+        }
+        .card-content {
+          padding: 1vw;
+          display: flex;
+          margin: auto;
+          flex-direction: column;
+          justify-content: space-between;
+          height: 36vh;
+          width: 100%;
+          button {
+            margin: auto;
+          }
+        }
+      }
+    }
+    .user-grid {
+      margin-top: 10vh;
+      width: 100%;
+    }
+  }
+  .loginModal {
+    box-shadow: var(--shadow);
+    position: fixed;
+    z-index: 5;
+    width: 30vw;
+    left: -35vw;
+    top: 25vh;
+    padding: 1vw;
+    border-radius: 1vw;
+    background-color: #eee7ec;
+    padding-top: 5vh;
+    padding-bottom: 5vh;
+    transition: all 0.3s;
+    visibility: hidden;
+    &.active {
+      left: 35vw;
+      visibility: visible;
+    }
+    .modal-content {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      padding-top: 2vw;
+      gap: 2vw;
+      .close-modal {
+        align-items: center;
+        display: flex;
+        border: none;
+        background: none;
+        height: 4vw;
+        width: 4vw;
+        position: absolute;
+        font-size: 3vw;
+        cursor: pointer;
+        right: 0;
+        top: 0;
+      }
+      * {
+        margin: auto;
+      }
+      h2 {
+        margin-top: 0;
+      }
+      .close-modal {
+        margin-right: 0;
+        margin-top: 0;
+        margin-bottom: 0;
+      }
+      .input-group {
+        display: flex;
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 2vw;
+        * {
+          margin-top: 1vw;
+        }
+        label {
+          margin-left: 0;
+        }
+        input {
+          margin-right: 0;
+          padding-left: 0.3vw;
+        }
+      }
+      button {
+        width: 60%;
+        margin-left: 20%;
+        margin-top: 1vw;
+        margin-bottom: 1vw;
+      }
+      .newChallenger {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  }
+}

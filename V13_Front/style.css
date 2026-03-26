@@ -1,0 +1,218 @@
+:root {
+  --green: #a2d897;
+  --lavender: #eee7ec;
+  --yellow: #ffb347;
+  --orange: #ef7b45;
+  --white: #ffffff;
+  --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+}
+body h1 {
+  color: black;
+}
+body a {
+  text-decoration: none;
+  color: black;
+}
+body .btn {
+  background-color: #a2d897;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 25px;
+  transition: 0.3s;
+  opacity: 0.2;
+}
+body .btn.active:hover {
+  background-color: #ffb347;
+}
+body .btn.active {
+  cursor: pointer;
+  opacity: 1;
+}
+body header {
+  background-color: var(--lavender);
+  padding: 1vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 5;
+  box-shadow: var(--shadow);
+}
+body header .userAnchor {
+  margin: auto;
+  margin-left: 2vw;
+  cursor: pointer;
+  display: none;
+}
+body header .btn-logout {
+  display: none;
+}
+body header .btn-login {
+  display: block;
+}
+body header.admin .userAnchor {
+  display: block;
+}
+body header.connected .btn-logout {
+  display: block;
+}
+body header.connected .btn-login {
+  display: none;
+}
+body header nav {
+  min-height: 2vw;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+body header nav div {
+  display: flex;
+  margin: auto;
+  margin-left: 0;
+}
+body header nav div strong {
+  font-size: 2vw;
+  font-weight: 900;
+}
+body main {
+  padding: 2vw;
+  margin-top: 10vh;
+  transition: all 0.3s;
+  filter: blur(0px);
+}
+body main.blured {
+  filter: blur(2px);
+}
+body main .recipe-grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 2vw;
+  justify-content: space-around;
+}
+body main .recipe-grid .card {
+  box-shadow: var(--shadow);
+  position: relative;
+  width: 25vw;
+  height: 70vh;
+  overflow: hidden;
+  border-radius: 1vw;
+  background-color: #eee7ec;
+}
+body main .recipe-grid .card .mini-btn {
+  width: 2vw;
+  border: none;
+  background-color: none;
+  margin: 1vw;
+  cursor: pointer;
+  border-radius: 1vw;
+}
+body main .recipe-grid .card .mini-btn:hover {
+  background: none;
+}
+body main .recipe-grid .card img {
+  width: 100%;
+}
+body main .recipe-grid .card .card-content {
+  padding: 1vw;
+  display: flex;
+  margin: auto;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 36vh;
+  width: 100%;
+}
+body main .recipe-grid .card .card-content button {
+  margin: auto;
+}
+body main .user-grid {
+  margin-top: 10vh;
+  width: 100%;
+}
+body .loginModal {
+  box-shadow: var(--shadow);
+  position: fixed;
+  z-index: 5;
+  width: 30vw;
+  left: -35vw;
+  top: 25vh;
+  padding: 1vw;
+  border-radius: 1vw;
+  background-color: #eee7ec;
+  padding-top: 5vh;
+  padding-bottom: 5vh;
+  transition: all 0.3s;
+  visibility: hidden;
+}
+body .loginModal.active {
+  left: 35vw;
+  visibility: visible;
+}
+body .loginModal .modal-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-top: 2vw;
+  gap: 2vw;
+}
+body .loginModal .modal-content .close-modal {
+  align-items: center;
+  display: flex;
+  border: none;
+  background: none;
+  height: 4vw;
+  width: 4vw;
+  position: absolute;
+  font-size: 3vw;
+  cursor: pointer;
+  right: 0;
+  top: 0;
+}
+body .loginModal .modal-content * {
+  margin: auto;
+}
+body .loginModal .modal-content h2 {
+  margin-top: 0;
+}
+body .loginModal .modal-content .close-modal {
+  margin-right: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+body .loginModal .modal-content .input-group {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 2vw;
+}
+body .loginModal .modal-content .input-group * {
+  margin-top: 1vw;
+}
+body .loginModal .modal-content .input-group label {
+  margin-left: 0;
+}
+body .loginModal .modal-content .input-group input {
+  margin-right: 0;
+  padding-left: 0.3vw;
+}
+body .loginModal .modal-content button {
+  width: 60%;
+  margin-left: 20%;
+  margin-top: 1vw;
+  margin-bottom: 1vw;
+}
+body .loginModal .modal-content .newChallenger {
+  width: 100%;
+  text-align: center;
+}/*# sourceMappingURL=style.css.map */

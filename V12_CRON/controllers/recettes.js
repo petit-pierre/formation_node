@@ -34,6 +34,20 @@ exports.getRecettes = async (req, res) => {
   }
 };
 
+// GET ALL VALIDATE
+exports.getValideRecettes = async (req, res) => {
+  try {
+    const rows = await Recette.findAllValide();
+    const recettes = rows.map((r) => ({
+      ...r,
+      etapes: r.etapes ? JSON.parse(r.etapes) : [],
+    }));
+    res.status(200).json(recettes);
+  } catch (err) {
+    res.status(500).json({ error: "Impossible de récupérer les recettes" });
+  }
+};
+
 // CREATE
 exports.createRecettes = async (req, res) => {
   try {
@@ -159,5 +173,20 @@ exports.putRecettes = async (req, res) => {
   } catch (err) {
     console.error("Erreur putRecettes:", err);
     res.status(500).json({ error: "Erreur serveur lors de la mise à jour." });
+  }
+};
+
+// Change visibility
+exports.changeVisibility = async (req, res) => {
+  try {
+    const recette = await Recette.findById(req.params.id);
+    if (!recette) {
+      return res.status(404).json({ error: "Recette non trouvée" });
+    }
+    req.body.visible && (await Recette.patch(req.params.id, req.body.visible));
+    res.status(200).json(recette);
+  } catch (err) {
+    console.error("Erreur getRecette:", err);
+    res.status(500).json({ error: "Erreur serveur lors de la récupération." });
   }
 };
