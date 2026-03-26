@@ -1,6 +1,7 @@
 const Recette = require("../models/recette");
 const { videoQueue } = require("../utils/videoQueue");
 const { recetteSchema } = require("../validator/recette");
+const User = require("../models/user");
 
 exports.optionsRecettes = (req, res) => {
   res.setHeader(
@@ -182,6 +183,13 @@ exports.changeVisibility = async (req, res) => {
     const recette = await Recette.findById(req.params.id);
     if (!recette) {
       return res.status(404).json({ error: "Recette non trouvée" });
+    }
+    const user = User.findById(req.auth.userId);
+    const isAdmin = user && user.role === "admin";
+    if (isAdmin === user) {
+      return res
+        .status(403)
+        .json({ message: "Non autorisé : vous n'êtes pas l'auteur." });
     }
     req.body.visible && (await Recette.patch(req.params.id, req.body.visible));
     res.status(200).json(recette);

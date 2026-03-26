@@ -139,6 +139,13 @@ body main .user-grid {
   margin-top: 10vh;
   width: 100%;
 }
+body main .user-grid .user-card {
+  display: inline-block;
+  margin: 1vw;
+}
+body main .user-grid .admin {
+  background-color: #ef7b45;
+}
 body .loginModal {
   box-shadow: var(--shadow);
   position: fixed;

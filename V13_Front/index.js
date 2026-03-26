@@ -21,6 +21,9 @@ document.addEventListener("keyup", function () {
     document
       .querySelector(".btn-connection")
       .addEventListener("click", connection);
+    document
+      .querySelector(".btn-insciption")
+      .addEventListener("click", inscription);
   } else {
     document.querySelector(".btn-connection").setAttribute("tabindex", "-1");
     document.querySelector(".btn-connection").classList.remove("active");
@@ -29,8 +32,31 @@ document.addEventListener("keyup", function () {
     document
       .querySelector(".btn-connection")
       .removeEventListener("click", connection);
+    document
+      .querySelector(".btn-insciption")
+      .removeEventListener("click", inscription);
   }
 });
+
+async function inscription() {
+  const response = await fetch("http://localhost:3000/users/sign_up", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      username: document.querySelector(".login").value,
+      password: document.querySelector(".password").value,
+    }),
+  });
+  const data = await response.json();
+  if (response.ok) {
+    token = data.token;
+    toggleModale();
+    show(token, data.user);
+    document.querySelector("header").classList.add("connected");
+  }
+}
 
 async function connection() {
   const response = await fetch("http://localhost:3000/users/log_in", {
@@ -50,14 +76,15 @@ async function connection() {
     toggleModale();
     show(token, data.user);
     document.querySelector("header").classList.add("connected");
-    document.querySelector("header").classList.add("admin");
+    data.user === "admin" &&
+      document.querySelector("header").classList.add("adminHeader");
   }
 }
 
 document.querySelector(".btn-logout").addEventListener("click", function () {
   token = null;
   document.querySelector("header").classList.remove("connected");
-  document.querySelector("header").classList.remove("admin");
+  document.querySelector("header").classList.remove("adminHeader");
   show(token);
 });
 
@@ -123,13 +150,11 @@ async function show(token, role) {
       });
       const users = await response.json();
       document.querySelector(".user-grid").innerHTML = "<h2>Utilisateurs</h2>";
-      console.log(users);
       if (response.ok) {
         users.response.forEach((user) => {
           const card = document.createElement("article");
           card.classList.add("user-card");
-          card.dataset.id = user.id;
-          card.innerHTML = `<span>${user.username}</span><span>${user.role}</span>`;
+          card.innerHTML = `<button value="${user.id}" class="${user.role} btn active btnAdmin"> ${user.username} </button>`;
           document.querySelector(".user-grid").appendChild(card);
         });
       }
@@ -148,7 +173,46 @@ const listener = function () {
         : changeVisibility(btn.value, "visible");
     });
   });
+  document.querySelectorAll(".delette").forEach((btn) => {
+    //console.log(btn.children[0].attributes.value.value);
+    btn.addEventListener("click", function () {
+      deletteRecipe(btn.value, token);
+    });
+  });
+  document.querySelectorAll(".btnAdmin").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      promoteAdmin(btn.value, token);
+    });
+  });
 };
+
+async function promoteAdmin(id, token) {
+  const response = await fetch("http://localhost:3000/users/" + id, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+  });
+  const data = await response.json();
+  if (response.ok) {
+    show(token, "admin");
+  }
+}
+
+async function deletteRecipe(id, token) {
+  const response = await fetch("http://localhost:3000/recettes/" + id, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+  });
+  const data = await response.json();
+  if (response.ok) {
+    show(token, "admin");
+  }
+}
 
 async function changeVisibility(id, visibility) {
   const response = await fetch("http://localhost:3000/recettes/" + id, {
