@@ -30,11 +30,10 @@
         <p>Cuisinez avec passion, partagez avec amour.</p>
       </section>
 
-      <main class="container">
-        <div id="recipeGrid" class="recipe-grid"></div>
-        <div id="user-grid" class="user-grid"></div>
-      </main>
+      <section id="recipeGrid" class="recipe-grid"></section>
+      <section id="user-grid" class="user-grid"></section>
     </main>
+    <section class="recip-modal"></section>
     <div id="loginModal" class="loginModal">
       <div class="modal-content">
         <button class="close-modal"><p>&times;</p></button>
@@ -58,7 +57,7 @@
               required
             />
           </div>
-          <button type="button" class="btn btn-connection" tabindex="-1">
+          <button type="submit" class="btn btn-connection" tabindex="-1">
             Se connecter
           </button>
           <p class="newChallenger">Pas encore de compte ?</p>

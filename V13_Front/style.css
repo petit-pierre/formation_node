@@ -7,6 +7,10 @@
   --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -60,7 +64,7 @@ body header .btn-logout {
 body header .btn-login {
   display: block;
 }
-body header.admin .userAnchor {
+body header.adminHeader .userAnchor {
   display: block;
 }
 body header.connected .btn-logout {
@@ -85,13 +89,18 @@ body header nav div strong {
   font-weight: 900;
 }
 body main {
+  width: 100%;
+  overflow: hidden;
   padding: 2vw;
-  margin-top: 10vh;
+  padding-top: 12vh;
   transition: all 0.3s;
   filter: blur(0px);
 }
 body main.blured {
   filter: blur(2px);
+}
+body main .hero {
+  margin-bottom: 10vh;
 }
 body main .recipe-grid {
   display: flex;
@@ -102,12 +111,14 @@ body main .recipe-grid {
 }
 body main .recipe-grid .card {
   box-shadow: var(--shadow);
-  position: relative;
   width: 25vw;
-  height: 70vh;
+  height: 30vw;
   overflow: hidden;
   border-radius: 1vw;
   background-color: #eee7ec;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 body main .recipe-grid .card .mini-btn {
   width: 2vw;
@@ -126,14 +137,14 @@ body main .recipe-grid .card img {
 body main .recipe-grid .card .card-content {
   padding: 1vw;
   display: flex;
-  margin: auto;
+  height: 100%;
   flex-direction: column;
   justify-content: space-between;
-  height: 36vh;
   width: 100%;
 }
 body main .recipe-grid .card .card-content button {
   margin: auto;
+  margin-bottom: 1vw;
 }
 body main .user-grid {
   margin-top: 10vh;
@@ -145,6 +156,15 @@ body main .user-grid .user-card {
 }
 body main .user-grid .admin {
   background-color: #ef7b45;
+}
+body main .user-grid .admin span {
+  width: -moz-fit-content;
+  width: fit-content;
+  margin-left: 1rem;
+  padding: 2px;
+  background-color: #ffffff;
+  border: solid 2px black;
+  border-radius: 100%;
 }
 body .loginModal {
   box-shadow: var(--shadow);
@@ -222,4 +242,18 @@ body .loginModal .modal-content button {
 body .loginModal .modal-content .newChallenger {
   width: 100%;
   text-align: center;
+}
+body .recip-modal {
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  padding-top: 15vh;
+  right: -100vw;
+  background-color: #ef7b45;
+  transition: all 0.3s;
+}
+body .recip-modal.active {
+  right: 0;
 }/*# sourceMappingURL=style.css.map */
