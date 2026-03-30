@@ -23,6 +23,10 @@ body {
     text-decoration: none;
     color: black;
   }
+  &.fixed {
+    position: fixed;
+  }
+  width: 100%;
   .btn {
     background-color: #a2d897;
     border: none;
@@ -95,8 +99,12 @@ body {
     padding-top: 12vh;
     transition: all 0.3s;
     filter: blur(0px);
+    visibility: visible;
     &.blured {
       filter: blur(2px);
+    }
+    &.invisible {
+      visibility: hidden;
     }
     .hero {
       margin-bottom: 10vh;
@@ -248,14 +256,22 @@ body {
   }
   .recip-modal {
     position: fixed;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     z-index: 2;
     top: 0;
     width: 100vw;
     height: 100vh;
+    padding: 2vw;
     padding-top: 15vh;
     right: -100vw;
     background-color: #ef7b45;
     transition: all 0.3s;
+    iframe {
+      border-radius: 1vw;
+      overflow: hidden;
+    }
     &.active {
       right: 0;
     }

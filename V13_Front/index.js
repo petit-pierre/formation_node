@@ -151,9 +151,32 @@ async function show(token, role) {
       document.querySelector(".recipe-grid").appendChild(card);
       card.addEventListener("click", function (e) {
         document.querySelector(".recip-modal").innerHTML =
-          `<p>${recette.title}</p>`;
-        document.querySelector(".recip-modal").classList.add("active");
-        console.log(e.target.value);
+          `<article><h2>${recette.title}</h2>
+          <br>
+          <p>${recette.description}</p>
+          <br>
+          <ul>
+          ${recette.etapes
+            .map((etape) => {
+              return `<li>${etape}</li>`;
+            })
+            .join("")}
+          </ul>
+          <br>
+          <button class="btn closeRecip active">Close</button></article>
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/${recette.youtube}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
+        let recipeModal = document.querySelector(".recip-modal");
+        recipeModal.classList.add("active");
+        document.querySelector("body").classList.add("fixed");
+        document.querySelector("main").classList.add("invisible");
+        document
+          .querySelector(".closeRecip")
+          .addEventListener("click", function () {
+            document.querySelector("body").classList.remove("fixed");
+            document.querySelector(".recip-modal").classList.remove("active");
+            document.querySelector(".recip-modal").innerHTML = "";
+            document.querySelector("main").classList.remove("invisible");
+          });
       });
     });
 
