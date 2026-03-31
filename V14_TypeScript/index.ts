@@ -1,9 +1,3 @@
-// # Pour créer le fichier de configuration (tsconfig.json)
-// npx tsc --init
-
-// # Pour lancer la compilation en mode surveillance (watch)
-// npx tsc -w
-
 // Remarquez les declaration de variable ci-dessous
 (() => {
   let modalLogin: boolean = false;
