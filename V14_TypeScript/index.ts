@@ -223,8 +223,9 @@
             `;
         document.querySelector(".recipe-grid")!.appendChild(card);
         card.addEventListener("click", function (e) {
-          document.querySelector(".recip-modal")!.innerHTML =
-            `<article><h2>${recette.title}</h2>
+          if ((e.target as HTMLButtonElement).classList.contains("btn-view")) {
+            document.querySelector(".recip-modal")!.innerHTML =
+              `<article><h2>${recette.title}</h2>
           <br>
           <p>${recette.description}</p>
           <br>
@@ -238,25 +239,26 @@
           <br>
           <button class="btn closeRecip active">Close</button></article>
           <iframe width="560" height="315" src="https://www.youtube.com/embed/${recette.youtube}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
-          let recipeModal = document.querySelector(
-            ".recip-modal",
-          ) as HTMLElement;
-          recipeModal.classList.add("active");
-          document.querySelector("body")!.classList.add("fixed");
-          document.querySelector("main")!.classList.add("invisible");
-          const closeRecipe = document.querySelector(
-            ".closeRecip",
-          ) as HTMLButtonElement;
-
-          closeRecipe.addEventListener("click", function () {
-            document.querySelector("body")!.classList.remove("fixed");
-            const recipeModal = document.querySelector(
+            let recipeModal = document.querySelector(
               ".recip-modal",
             ) as HTMLElement;
-            recipeModal.classList.remove("active");
-            recipeModal.innerHTML = "";
-            document.querySelector("main")!.classList.remove("invisible");
-          });
+            recipeModal.classList.add("active");
+            document.querySelector("body")!.classList.add("fixed");
+            document.querySelector("main")!.classList.add("invisible");
+            const closeRecipe = document.querySelector(
+              ".closeRecip",
+            ) as HTMLButtonElement;
+
+            closeRecipe.addEventListener("click", function () {
+              document.querySelector("body")!.classList.remove("fixed");
+              const recipeModal = document.querySelector(
+                ".recip-modal",
+              ) as HTMLElement;
+              recipeModal.classList.remove("active");
+              recipeModal.innerHTML = "";
+              document.querySelector("main")!.classList.remove("invisible");
+            });
+          }
         });
       });
 
