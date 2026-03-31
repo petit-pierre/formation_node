@@ -1,5 +1,3 @@
-// Remarquez les declaration de variable ci-dessous
-
 let modalLogin: boolean = false;
 let token: string | null = null;
 const btnLogin = document.querySelector(".btn-login") as HTMLButtonElement;
