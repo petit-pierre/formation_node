@@ -9,6 +9,10 @@ btnLogin.addEventListener("click", function () {
   validateConnexion();
 });
 
+const disconect = function () {
+  window.location.reload();
+};
+
 const headerCloser = document.querySelector("header") as HTMLElement;
 headerCloser.addEventListener("click", function (e) {
   if (!(e.target as HTMLElement).closest("button")) {
@@ -187,7 +191,7 @@ function toggleFormRecipe(token: string | null, role: "admin" | null): void {
         <button id="openLoginModal" class="btn-login active btn">
           <p>Connexion</p>
         </button>
-        <button id="openLoginModal" class="btn-logout active btn">
+        <button id="openLoginModal" class="btn-logout active btn" onclick="disconect()">
           <p>Deconnexion</p>
         </button>
       `;

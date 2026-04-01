@@ -42,6 +42,9 @@ btnLogin.addEventListener("click", function () {
     toggleModale();
     validateConnexion();
 });
+var disconect = function () {
+    window.location.reload();
+};
 var headerCloser = document.querySelector("header");
 headerCloser.addEventListener("click", function (e) {
     if (!e.target.closest("button")) {
@@ -190,7 +193,7 @@ function toggleModale() {
 // Nous devons typer les variables attendu par notre fonction
 // Nous pouvons aussi typer la valeur attendu en retour
 function toggleFormRecipe(token, role) {
-    document.querySelector("nav").innerHTML = "\n        <div>\n          <a href=\"#top\"><strong>Cahier de recettes</strong></a>\n          <a href=\"#user-grid\" class=\"userAnchor\">\n            <span>| Gestion des utilisateurs</span>\n          </a>\n        </div>\n        <button class='btn active add-recipe'\">Ajouter une recette</button>\n        <button id=\"openLoginModal\" class=\"btn-login active btn\">\n          <p>Connexion</p>\n        </button>\n        <button id=\"openLoginModal\" class=\"btn-logout active btn\">\n          <p>Deconnexion</p>\n        </button>\n      ";
+    document.querySelector("nav").innerHTML = "\n        <div>\n          <a href=\"#top\"><strong>Cahier de recettes</strong></a>\n          <a href=\"#user-grid\" class=\"userAnchor\">\n            <span>| Gestion des utilisateurs</span>\n          </a>\n        </div>\n        <button class='btn active add-recipe'\">Ajouter une recette</button>\n        <button id=\"openLoginModal\" class=\"btn-login active btn\">\n          <p>Connexion</p>\n        </button>\n        <button id=\"openLoginModal\" class=\"btn-logout active btn\" onclick=\"disconect()\">\n          <p>Deconnexion</p>\n        </button>\n      ";
     document.querySelector(".add-recipe").addEventListener("click", function () {
         var recipeModal = document.querySelector(".recip-modal");
         recipeModal.classList.add("add-recipe");
