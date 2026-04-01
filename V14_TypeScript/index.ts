@@ -82,7 +82,7 @@ async function inscription() {
   if (response.ok) {
     token = data.token;
     toggleModale();
-
+    console.log(data.user);
     show(token, data.user);
 
     // Ci dessous nous ciblons le header et grace au ! nous precisons que cette balise existe bien dans le HTML
@@ -156,8 +156,77 @@ function toggleModale() {
 
 // Nous devons typer les variables attendu par notre fonction
 // Nous pouvons aussi typer la valeur attendu en retour
+function toggleFormRecipe(token: string | null, role: "admin" | null): void {
+  document.querySelector("nav")!.innerHTML = `
+        <div>
+          <a href="#top"><strong>Cahier de recettes</strong></a>
+          <a href="#user-grid" class="userAnchor">
+            <span>| Gestion des utilisateurs</span>
+          </a>
+        </div>
+        <button class='btn active add-recipe'">Ajouter une recette</button>
+        <button id="openLoginModal" class="btn-login active btn">
+          <p>Connexion</p>
+        </button>
+        <button id="openLoginModal" class="btn-logout active btn">
+          <p>Deconnexion</p>
+        </button>
+      `;
+  document.querySelector(".add-recipe")!.addEventListener("click", function () {
+    let recipeModal = document.querySelector(".recip-modal") as HTMLElement;
+    document.querySelector(".recip-modal")!.innerHTML =
+      `<h2>Ajoutez une recette</h2>
+            <form class="form-recipe">
+            <input type="text" name="title" placeholder="Titre de la recette" required>
+            <textarea name="description" placeholder="Description de la recette" required></textarea>
+            <input type="text" name="etapes" placeholder="Etapes de la recette (séparées par des virgules)" required>
+            <button type="button" class="btn sendRecipe active">Envoyer la recette</button>
+            </form>`;
+    recipeModal.classList.add("active");
+    document.querySelector("body")!.classList.add("fixed");
+    document.querySelector("main")!.classList.add("invisible");
+    const closeRecipe = document.querySelector(
+      ".sendRecipe",
+    ) as HTMLButtonElement;
+    closeRecipe.addEventListener("click", async function () {
+      const title = (
+        document.querySelector('[name="title"]') as HTMLInputElement
+      ).value;
+      const description = (
+        document.querySelector('[name="description"]') as HTMLTextAreaElement
+      ).value;
+      const etapes = (
+        document.querySelector('[name="etapes"]') as HTMLInputElement
+      ).value;
+      const formData = new FormData();
+      const recette = {
+        title: title,
+        description: description,
+        etapes: [etapes],
+      };
+      formData.append("recette", JSON.stringify(recette));
+      const response = await fetch("http://localhost:3000/recettes", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+        body: formData,
+      });
+      const data = await response.json();
+
+      document.querySelector("body")!.classList.remove("fixed");
+      const recipeModal = document.querySelector(".recip-modal") as HTMLElement;
+      recipeModal.classList.remove("active");
+      recipeModal.innerHTML = "";
+      document.querySelector("main")!.classList.remove("invisible");
+      show(token, role);
+    });
+  });
+}
 
 async function show(token: string | null, role: "admin" | null): Promise<void> {
+  token !== null && toggleFormRecipe(token, role);
+
   let response;
   role === "admin"
     ? (response = await fetch("http://localhost:3000/recettes", {
@@ -190,7 +259,7 @@ async function show(token: string | null, role: "admin" | null): Promise<void> {
       card.classList.add("recipe-card");
       card.innerHTML = `
                 <div class="card">
-                    <img src="https://img.youtube.com/vi/${recette.youtube}/mqdefault.jpg" alt="${recette.title}" loading="lazy">
+                    <img src="https://img.youtube.com/vi/${recette.youtube !== null ? recette.youtube : "uOQapO-2awo"}/mqdefault.jpg" alt="${recette.title}" loading="lazy">
                    ${
                      role === "admin"
                        ? `<div class="buttonSection">

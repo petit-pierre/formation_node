@@ -70,15 +70,16 @@ exports.createRecettes = async (req, res) => {
       etapes: JSON.stringify(validation.data.etapes) || "[]",
       status: "pending",
     });
-
-    await videoQueue.add("process-media", {
-      action: "CREATE",
-      recetteId: newId,
-      filePath: req.file.path,
-      fileName: req.fileName,
-      mimetype: req.file.mimetype,
-      title: validation.data.title,
-    });
+    if (req.file) {
+      await videoQueue.add("process-media", {
+        action: "CREATE",
+        recetteId: newId,
+        filePath: req.file.path,
+        fileName: req.fileName,
+        mimetype: req.file.mimetype,
+        title: validation.data.title,
+      });
+    }
     res.status(202).json({ message: "Traitement en cours...", id: newId });
   } catch (err) {
     res.status(500).json({ error: "Erreur lors de l'insertion." });

@@ -97,6 +97,7 @@ function inscription() {
                     if (response.ok) {
                         token = data.token;
                         toggleModale();
+                        console.log(data.user);
                         show(token, data.user);
                         // Ci dessous nous ciblons le header et grace au ! nous precisons que cette balise existe bien dans le HTML
                         // Nous aurions put utiliser ? a la place ce qui signifi que si cette balise existe on lui ajoute la class connected
@@ -170,12 +171,64 @@ function toggleModale() {
 }
 // Nous devons typer les variables attendu par notre fonction
 // Nous pouvons aussi typer la valeur attendu en retour
+function toggleFormRecipe(token, role) {
+    document.querySelector("nav").innerHTML = "\n        <div>\n          <a href=\"#top\"><strong>Cahier de recettes</strong></a>\n          <a href=\"#user-grid\" class=\"userAnchor\">\n            <span>| Gestion des utilisateurs</span>\n          </a>\n        </div>\n        <button class='btn active add-recipe'\">Ajouter une recette</button>\n        <button id=\"openLoginModal\" class=\"btn-login active btn\">\n          <p>Connexion</p>\n        </button>\n        <button id=\"openLoginModal\" class=\"btn-logout active btn\">\n          <p>Deconnexion</p>\n        </button>\n      ";
+    document.querySelector(".add-recipe").addEventListener("click", function () {
+        var recipeModal = document.querySelector(".recip-modal");
+        document.querySelector(".recip-modal").innerHTML =
+            "<h2>Ajoutez une recette</h2>\n            <form class=\"form-recipe\">\n            <input type=\"text\" name=\"title\" placeholder=\"Titre de la recette\" required>\n            <textarea name=\"description\" placeholder=\"Description de la recette\" required></textarea>\n            <input type=\"text\" name=\"etapes\" placeholder=\"Etapes de la recette (s\u00E9par\u00E9es par des virgules)\" required>\n            <button type=\"button\" class=\"btn sendRecipe active\">Envoyer la recette</button>\n            </form>";
+        recipeModal.classList.add("active");
+        document.querySelector("body").classList.add("fixed");
+        document.querySelector("main").classList.add("invisible");
+        var closeRecipe = document.querySelector(".sendRecipe");
+        closeRecipe.addEventListener("click", function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var title, description, etapes, formData, recette, response, data, recipeModal;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            title = document.querySelector('[name="title"]').value;
+                            description = document.querySelector('[name="description"]').value;
+                            etapes = document.querySelector('[name="etapes"]').value;
+                            formData = new FormData();
+                            recette = {
+                                title: title,
+                                description: description,
+                                etapes: [etapes],
+                            };
+                            formData.append("recette", JSON.stringify(recette));
+                            return [4 /*yield*/, fetch("http://localhost:3000/recettes", {
+                                    method: "POST",
+                                    headers: {
+                                        Authorization: "Bearer " + token,
+                                    },
+                                    body: formData,
+                                })];
+                        case 1:
+                            response = _a.sent();
+                            return [4 /*yield*/, response.json()];
+                        case 2:
+                            data = _a.sent();
+                            document.querySelector("body").classList.remove("fixed");
+                            recipeModal = document.querySelector(".recip-modal");
+                            recipeModal.classList.remove("active");
+                            recipeModal.innerHTML = "";
+                            document.querySelector("main").classList.remove("invisible");
+                            show(token, role);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        });
+    });
+}
 function show(token, role) {
     return __awaiter(this, void 0, void 0, function () {
         var response, _a, data;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
+                    token !== null && toggleFormRecipe(token, role);
                     if (!(role === "admin")) return [3 /*break*/, 2];
                     return [4 /*yield*/, fetch("http://localhost:3000/recettes", {
                             headers: { Authorization: "Bearer " + token },
@@ -197,7 +250,7 @@ function show(token, role) {
                         data.forEach(function (recette) {
                             var card = document.createElement("article");
                             card.classList.add("recipe-card");
-                            card.innerHTML = "\n                <div class=\"card\">\n                    <img src=\"https://img.youtube.com/vi/".concat(recette.youtube, "/mqdefault.jpg\" alt=\"").concat(recette.title, "\" loading=\"lazy\">\n                   ").concat(role === "admin"
+                            card.innerHTML = "\n                <div class=\"card\">\n                    <img src=\"https://img.youtube.com/vi/".concat(recette.youtube !== null ? recette.youtube : "uOQapO-2awo", "/mqdefault.jpg\" alt=\"").concat(recette.title, "\" loading=\"lazy\">\n                   ").concat(role === "admin"
                                 ? "<div class=\"buttonSection\">\n  <button id=\"".concat(recette.status, "\" class=\"mini-btn visibility\" value=\"").concat(recette.id, "\">\n    ").concat(recette.status === "visible"
                                     ? "<img class=\"eye\" value=\"visible\" src=\"./assets/eye.png\">"
                                     : "<img class=\"eye\" value=\"close\" src=\"./assets/noeye.png\">", "\n  </button>\n  <button class=\"mini-btn delette\" value=\"").concat(recette.id, "\"><img src=\"./assets/trash.png\"></button></div>\n")
