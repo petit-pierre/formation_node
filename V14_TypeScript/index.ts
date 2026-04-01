@@ -206,7 +206,7 @@ function toggleFormRecipe(token: string | null, role: "admin" | null): void {
                 <br>
                 <p>Etapes de la recette</p>
                 <textarea name="etapes" placeholder="Etapes de la recette" required></textarea>
-                <button type="button" class="add-etape btn-recipe active">  +  </button>
+                <button type="button" class="add-etape active">  +  </button>
               </div>
               <br>
               
@@ -229,6 +229,7 @@ function toggleFormRecipe(token: string | null, role: "admin" | null): void {
         <textarea class="etape-input" name="etapes" placeholder="Etapes de la recette" required></textarea>
         <button class="delete-etape-btn btn-recipe">  -  </button>
         `;
+        newEtape.classList.add("one-etape");
         inputEtape.insertBefore(newEtape, document.querySelector(".add-etape"));
         newEtape.children[1].addEventListener("click", function () {
           inputEtape.removeChild(newEtape);
