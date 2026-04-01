@@ -55,6 +55,7 @@ headerCloser.addEventListener("click", function (e) {
         document.querySelector("body").classList.remove("fixed");
         var recipeModal = document.querySelector(".recip-modal");
         recipeModal.classList.remove("active");
+        recipeModal.classList.remove("add-recipe");
         recipeModal.innerHTML = "";
         document.querySelector("main").classList.remove("invisible");
     }
@@ -192,14 +193,14 @@ function toggleFormRecipe(token, role) {
     document.querySelector("nav").innerHTML = "\n        <div>\n          <a href=\"#top\"><strong>Cahier de recettes</strong></a>\n          <a href=\"#user-grid\" class=\"userAnchor\">\n            <span>| Gestion des utilisateurs</span>\n          </a>\n        </div>\n        <button class='btn active add-recipe'\">Ajouter une recette</button>\n        <button id=\"openLoginModal\" class=\"btn-login active btn\">\n          <p>Connexion</p>\n        </button>\n        <button id=\"openLoginModal\" class=\"btn-logout active btn\">\n          <p>Deconnexion</p>\n        </button>\n      ";
     document.querySelector(".add-recipe").addEventListener("click", function () {
         var recipeModal = document.querySelector(".recip-modal");
-        document.querySelector(".recip-modal").innerHTML =
-            "<div><h2>Ajoutez une recette</h2>\n            <form class=\"form-recipe\">\n              <input type=\"text\" name=\"title\" placeholder=\"Titre de la recette\" required>\n              <br>\n              <input type=\"file\" name=\"file\" accept=\".jpg, .jpeg, .gif, .webp, .mp4\">\n              <br>\n              <textarea name=\"description\" placeholder=\"Description de la recette\" required></textarea>\n              <br>\n              <div class=\"input-etape\">\n                <textarea name=\"etapes\" placeholder=\"Etapes de la recette\" required></textarea>\n                <button type=\"button\" class=\"add-etape active\">  +  </button>\n              </div>\n              <br>\n              <button type=\"button\" class=\"btn sendRecipe active\">Envoyer la recette</button>\n            </form>\n        </div>";
+        recipeModal.classList.add("add-recipe");
+        recipeModal.innerHTML = "\n    <h2>Ajoutez une recette</h2>\n    <div class=\"recipe-form\">\n      <form class=\"form-recipe\">\n              <input type=\"text\" name=\"title\" placeholder=\"Titre de la recette\" required>\n              <br>\n              <textarea name=\"description\" placeholder=\"Description de la recette\" required></textarea>\n              <br>\n              <div class=\"input-etape\">\n                <br>\n                <p>Etapes de la recette</p>\n                <textarea name=\"etapes\" placeholder=\"Etapes de la recette\" required></textarea>\n                <button type=\"button\" class=\"add-etape btn-recipe active\">  +  </button>\n              </div>\n              <br>\n              \n      </form>\n      <div class=\"upload-media\">\n              <p>(optionnel) Ajoutez une image ou une vid\u00E9o de votre recette</p>\n              <input type=\"file\" name=\"file\" accept=\".jpg, .jpeg, .gif, .webp, .mp4\">\n      </div>\n      </div>\n      <button type=\"button\" class=\"btn sendRecipe active\">Envoyer la recette</button>\n        ";
         document
             .querySelector(".add-etape")
             .addEventListener("click", function () {
             var inputEtape = document.querySelector(".input-etape");
             var newEtape = document.createElement("div");
-            newEtape.innerHTML = "\n        <textarea name=\"etapes\" placeholder=\"Etapes de la recette\" required></textarea>\n        <button class=\"delete-etape-btn\">  -  </button>\n        ";
+            newEtape.innerHTML = "\n        <textarea class=\"etape-input\" name=\"etapes\" placeholder=\"Etapes de la recette\" required></textarea>\n        <button class=\"delete-etape-btn btn-recipe\">  -  </button>\n        ";
             inputEtape.insertBefore(newEtape, document.querySelector(".add-etape"));
             newEtape.children[1].addEventListener("click", function () {
                 inputEtape.removeChild(newEtape);
@@ -219,6 +220,10 @@ function toggleFormRecipe(token, role) {
                             description = document.querySelector('[name="description"]').value;
                             etapes = Array.from(document.querySelectorAll('[name="etapes"]')).map(function (etape) { return etape.value; });
                             formData = new FormData();
+                            if (title.length < 5 || description.length < 10 || etapes.length === 0) {
+                                alert("Veuillez remplir tous les champs de la recette (titre, description, etapes)");
+                                return [2 /*return*/];
+                            }
                             recette = {
                                 title: title,
                                 description: description,
@@ -244,6 +249,7 @@ function toggleFormRecipe(token, role) {
                             document.querySelector("body").classList.remove("fixed");
                             recipeModal = document.querySelector(".recip-modal");
                             recipeModal.classList.remove("active");
+                            recipeModal.classList.remove("add-recipe");
                             recipeModal.innerHTML = "";
                             document.querySelector("main").classList.remove("invisible");
                             show(token, role);
@@ -298,6 +304,7 @@ function show(token, role) {
                                             .join(""), "\n          </ul>\n          <br>\n          <button class=\"btn closeRecip active\">Close</button></article>\n          <iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/").concat(recette.youtube, "\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>");
                                     var recipeModal = document.querySelector(".recip-modal");
                                     recipeModal.classList.add("active");
+                                    recipeModal.classList.remove("add-recipe");
                                     document.querySelector("body").classList.add("fixed");
                                     document.querySelector("main").classList.add("invisible");
                                     var closeRecipe = document.querySelector(".closeRecip");
@@ -305,6 +312,7 @@ function show(token, role) {
                                         document.querySelector("body").classList.remove("fixed");
                                         var recipeModal = document.querySelector(".recip-modal");
                                         recipeModal.classList.remove("active");
+                                        recipeModal.classList.remove("add-recipe");
                                         recipeModal.innerHTML = "";
                                         document.querySelector("main").classList.remove("invisible");
                                     });

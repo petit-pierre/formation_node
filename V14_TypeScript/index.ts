@@ -22,6 +22,7 @@ headerCloser.addEventListener("click", function (e) {
     document.querySelector("body")!.classList.remove("fixed");
     const recipeModal = document.querySelector(".recip-modal") as HTMLElement;
     recipeModal.classList.remove("active");
+    recipeModal.classList.remove("add-recipe");
     recipeModal.innerHTML = "";
     document.querySelector("main")!.classList.remove("invisible");
   }
@@ -192,23 +193,31 @@ function toggleFormRecipe(token: string | null, role: "admin" | null): void {
       `;
   document.querySelector(".add-recipe")!.addEventListener("click", function () {
     let recipeModal = document.querySelector(".recip-modal") as HTMLElement;
-    document.querySelector(".recip-modal")!.innerHTML =
-      `<div><h2>Ajoutez une recette</h2>
-            <form class="form-recipe">
+    recipeModal.classList.add("add-recipe");
+    recipeModal.innerHTML = `
+    <h2>Ajoutez une recette</h2>
+    <div class="recipe-form">
+      <form class="form-recipe">
               <input type="text" name="title" placeholder="Titre de la recette" required>
-              <br>
-              <input type="file" name="file" accept=".jpg, .jpeg, .gif, .webp, .mp4">
               <br>
               <textarea name="description" placeholder="Description de la recette" required></textarea>
               <br>
               <div class="input-etape">
+                <br>
+                <p>Etapes de la recette</p>
                 <textarea name="etapes" placeholder="Etapes de la recette" required></textarea>
-                <button type="button" class="add-etape active">  +  </button>
+                <button type="button" class="add-etape btn-recipe active">  +  </button>
               </div>
               <br>
-              <button type="button" class="btn sendRecipe active">Envoyer la recette</button>
-            </form>
-        </div>`;
+              
+      </form>
+      <div class="upload-media">
+              <p>(optionnel) Ajoutez une image ou une vidéo de votre recette</p>
+              <input type="file" name="file" accept=".jpg, .jpeg, .gif, .webp, .mp4">
+      </div>
+      </div>
+      <button type="button" class="btn sendRecipe active">Envoyer la recette</button>
+        `;
     document
       .querySelector(".add-etape")!
       .addEventListener("click", function () {
@@ -217,8 +226,8 @@ function toggleFormRecipe(token: string | null, role: "admin" | null): void {
         ) as HTMLElement;
         const newEtape = document.createElement("div");
         newEtape.innerHTML = `
-        <textarea name="etapes" placeholder="Etapes de la recette" required></textarea>
-        <button class="delete-etape-btn">  -  </button>
+        <textarea class="etape-input" name="etapes" placeholder="Etapes de la recette" required></textarea>
+        <button class="delete-etape-btn btn-recipe">  -  </button>
         `;
         inputEtape.insertBefore(newEtape, document.querySelector(".add-etape"));
         newEtape.children[1].addEventListener("click", function () {
@@ -244,6 +253,12 @@ function toggleFormRecipe(token: string | null, role: "admin" | null): void {
         ) as NodeListOf<HTMLTextAreaElement>,
       ).map((etape) => etape.value);
       const formData = new FormData();
+      if (title.length < 5 || description.length < 10 || etapes.length === 0) {
+        alert(
+          "Veuillez remplir tous les champs de la recette (titre, description, etapes)",
+        );
+        return;
+      }
       const recette = {
         title: title,
         description: description,
@@ -268,6 +283,7 @@ function toggleFormRecipe(token: string | null, role: "admin" | null): void {
       document.querySelector("body")!.classList.remove("fixed");
       const recipeModal = document.querySelector(".recip-modal") as HTMLElement;
       recipeModal.classList.remove("active");
+      recipeModal.classList.remove("add-recipe");
       recipeModal.innerHTML = "";
       document.querySelector("main")!.classList.remove("invisible");
       show(token, role);
@@ -358,6 +374,7 @@ async function show(token: string | null, role: "admin" | null): Promise<void> {
             ".recip-modal",
           ) as HTMLElement;
           recipeModal.classList.add("active");
+          recipeModal.classList.remove("add-recipe");
           document.querySelector("body")!.classList.add("fixed");
           document.querySelector("main")!.classList.add("invisible");
           const closeRecipe = document.querySelector(
@@ -370,6 +387,7 @@ async function show(token: string | null, role: "admin" | null): Promise<void> {
               ".recip-modal",
             ) as HTMLElement;
             recipeModal.classList.remove("active");
+            recipeModal.classList.remove("add-recipe");
             recipeModal.innerHTML = "";
             document.querySelector("main")!.classList.remove("invisible");
           });

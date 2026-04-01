@@ -255,6 +255,7 @@ body .loginModal .modal-content .newChallenger {
   text-align: center;
 }
 body .recip-modal {
+  overflow-y: scroll;
   position: fixed;
   display: flex;
   flex-direction: row;
@@ -268,6 +269,50 @@ body .recip-modal {
   right: -100vw;
   background-color: #ef7b45;
   transition: all 0.3s;
+}
+body .recip-modal.add-recipe {
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 5vw;
+}
+body .recip-modal.add-recipe .btn-recipe {
+  cursor: pointer;
+  position: absolute;
+  width: 2vw;
+  height: 2vw;
+  margin: 2vw;
+  background: #eee7ec;
+  border-radius: 100%;
+  border: none;
+}
+body .recip-modal.add-recipe .recipe-form {
+  display: flex;
+  flex-direction: row;
+  gap: 2vw;
+}
+body .recip-modal.add-recipe .recipe-form form {
+  width: 50%;
+}
+body .recip-modal.add-recipe .recipe-form .upload-media {
+  width: 50%;
+}
+body .recip-modal.add-recipe .recipe-form p {
+  width: 100%;
+}
+body .recip-modal.add-recipe .recipe-form input {
+  width: 100%;
+}
+body .recip-modal.add-recipe .recipe-form textarea {
+  width: 100%;
+  margin-top: 2vw;
+  resize: none;
+  height: 5vw;
+  overflow-y: scroll;
+  position: relative;
+}
+body .recip-modal.add-recipe .recipe-form .sendRecipe {
+  margin: auto;
+  margin-top: 2vw;
 }
 body .recip-modal iframe {
   border-radius: 1vw;

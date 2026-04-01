@@ -256,6 +256,7 @@ body {
     }
   }
   .recip-modal {
+    overflow-y: scroll;
     position: fixed;
     display: flex;
     flex-direction: row;
@@ -269,6 +270,54 @@ body {
     right: -100vw;
     background-color: #ef7b45;
     transition: all 0.3s;
+    &.add-recipe {
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 5vw;
+      .etape-input {
+      }
+      .btn-recipe {
+        cursor: pointer;
+        position: absolute;
+        //top: 0;
+        width: 2vw;
+        height: 2vw;
+        margin: 2vw;
+        background: #eee7ec;
+        border-radius: 100%;
+        border: none;
+      }
+      .recipe-form {
+        display: flex;
+        flex-direction: row;
+        gap: 2vw;
+        form {
+          width: 50%;
+        }
+        .upload-media {
+          width: 50%;
+        }
+        p {
+          width: 100%;
+          //margin-top: 2vw;
+        }
+        input {
+          width: 100%;
+        }
+        textarea {
+          width: 100%;
+          margin-top: 2vw;
+          resize: none;
+          height: 5vw;
+          overflow-y: scroll;
+          position: relative;
+        }
+        .sendRecipe {
+          margin: auto;
+          margin-top: 2vw;
+        }
+      }
+    }
     iframe {
       border-radius: 1vw;
       overflow: hidden;
