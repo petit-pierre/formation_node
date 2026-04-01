@@ -74,6 +74,7 @@ body header.adminHeader .userAnchor {
   display: block;
 }
 body header.connected .btn-logout {
+  margin-left: 2vw;
   display: block;
 }
 body header.connected .btn-login {

@@ -42,6 +42,23 @@ btnLogin.addEventListener("click", function () {
     toggleModale();
     validateConnexion();
 });
+var headerCloser = document.querySelector("header");
+headerCloser.addEventListener("click", function (e) {
+    if (!e.target.closest("button")) {
+        modalLogin = false;
+        document.querySelector("main").classList.remove("blured");
+        document.querySelector(".loginModal").classList.remove("active");
+        document.querySelectorAll(".btn-view").forEach(function (btn) {
+            btn.setAttribute("tabindex", "0");
+            btn.classList.add("active");
+        });
+        document.querySelector("body").classList.remove("fixed");
+        var recipeModal = document.querySelector(".recip-modal");
+        recipeModal.classList.remove("active");
+        recipeModal.innerHTML = "";
+        document.querySelector("main").classList.remove("invisible");
+    }
+});
 var btnCloseModale = document.querySelector(".close-modal");
 btnCloseModale.addEventListener("click", function () {
     toggleModale();
@@ -176,27 +193,42 @@ function toggleFormRecipe(token, role) {
     document.querySelector(".add-recipe").addEventListener("click", function () {
         var recipeModal = document.querySelector(".recip-modal");
         document.querySelector(".recip-modal").innerHTML =
-            "<h2>Ajoutez une recette</h2>\n            <form class=\"form-recipe\">\n            <input type=\"text\" name=\"title\" placeholder=\"Titre de la recette\" required>\n            <textarea name=\"description\" placeholder=\"Description de la recette\" required></textarea>\n            <input type=\"text\" name=\"etapes\" placeholder=\"Etapes de la recette (s\u00E9par\u00E9es par des virgules)\" required>\n            <button type=\"button\" class=\"btn sendRecipe active\">Envoyer la recette</button>\n            </form>";
+            "<div><h2>Ajoutez une recette</h2>\n            <form class=\"form-recipe\">\n              <input type=\"text\" name=\"title\" placeholder=\"Titre de la recette\" required>\n              <br>\n              <input type=\"file\" name=\"file\" accept=\".jpg, .jpeg, .gif, .webp, .mp4\">\n              <br>\n              <textarea name=\"description\" placeholder=\"Description de la recette\" required></textarea>\n              <br>\n              <div class=\"input-etape\">\n                <textarea name=\"etapes\" placeholder=\"Etapes de la recette\" required></textarea>\n                <button type=\"button\" class=\"add-etape active\">  +  </button>\n              </div>\n              <br>\n              <button type=\"button\" class=\"btn sendRecipe active\">Envoyer la recette</button>\n            </form>\n        </div>";
+        document
+            .querySelector(".add-etape")
+            .addEventListener("click", function () {
+            var inputEtape = document.querySelector(".input-etape");
+            var newEtape = document.createElement("div");
+            newEtape.innerHTML = "\n        <textarea name=\"etapes\" placeholder=\"Etapes de la recette\" required></textarea>\n        <button class=\"delete-etape-btn\">  -  </button>\n        ";
+            inputEtape.insertBefore(newEtape, document.querySelector(".add-etape"));
+            newEtape.children[1].addEventListener("click", function () {
+                inputEtape.removeChild(newEtape);
+            });
+        });
         recipeModal.classList.add("active");
         document.querySelector("body").classList.add("fixed");
         document.querySelector("main").classList.add("invisible");
         var closeRecipe = document.querySelector(".sendRecipe");
         closeRecipe.addEventListener("click", function () {
             return __awaiter(this, void 0, void 0, function () {
-                var title, description, etapes, formData, recette, response, data, recipeModal;
+                var title, description, etapes, formData, recette, fileInput, response, data, recipeModal;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             title = document.querySelector('[name="title"]').value;
                             description = document.querySelector('[name="description"]').value;
-                            etapes = document.querySelector('[name="etapes"]').value;
+                            etapes = Array.from(document.querySelectorAll('[name="etapes"]')).map(function (etape) { return etape.value; });
                             formData = new FormData();
                             recette = {
                                 title: title,
                                 description: description,
-                                etapes: [etapes],
+                                etapes: etapes,
                             };
                             formData.append("recette", JSON.stringify(recette));
+                            fileInput = document.querySelector('[name="file"]');
+                            if (fileInput.files && fileInput.files[0]) {
+                                formData.append("file", fileInput.files[0]);
+                            }
                             return [4 /*yield*/, fetch("http://localhost:3000/recettes", {
                                     method: "POST",
                                     headers: {

@@ -9,6 +9,24 @@ btnLogin.addEventListener("click", function () {
   validateConnexion();
 });
 
+const headerCloser = document.querySelector("header") as HTMLElement;
+headerCloser.addEventListener("click", function (e) {
+  if (!(e.target as HTMLElement).closest("button")) {
+    modalLogin = false;
+    document.querySelector("main")!.classList.remove("blured");
+    document.querySelector(".loginModal")!.classList.remove("active");
+    document.querySelectorAll<HTMLButtonElement>(".btn-view").forEach((btn) => {
+      btn.setAttribute("tabindex", "0");
+      btn.classList.add("active");
+    });
+    document.querySelector("body")!.classList.remove("fixed");
+    const recipeModal = document.querySelector(".recip-modal") as HTMLElement;
+    recipeModal.classList.remove("active");
+    recipeModal.innerHTML = "";
+    document.querySelector("main")!.classList.remove("invisible");
+  }
+});
+
 const btnCloseModale = document.querySelector(
   ".close-modal",
 ) as HTMLButtonElement;
@@ -175,13 +193,38 @@ function toggleFormRecipe(token: string | null, role: "admin" | null): void {
   document.querySelector(".add-recipe")!.addEventListener("click", function () {
     let recipeModal = document.querySelector(".recip-modal") as HTMLElement;
     document.querySelector(".recip-modal")!.innerHTML =
-      `<h2>Ajoutez une recette</h2>
+      `<div><h2>Ajoutez une recette</h2>
             <form class="form-recipe">
-            <input type="text" name="title" placeholder="Titre de la recette" required>
-            <textarea name="description" placeholder="Description de la recette" required></textarea>
-            <input type="text" name="etapes" placeholder="Etapes de la recette (séparées par des virgules)" required>
-            <button type="button" class="btn sendRecipe active">Envoyer la recette</button>
-            </form>`;
+              <input type="text" name="title" placeholder="Titre de la recette" required>
+              <br>
+              <input type="file" name="file" accept=".jpg, .jpeg, .gif, .webp, .mp4">
+              <br>
+              <textarea name="description" placeholder="Description de la recette" required></textarea>
+              <br>
+              <div class="input-etape">
+                <textarea name="etapes" placeholder="Etapes de la recette" required></textarea>
+                <button type="button" class="add-etape active">  +  </button>
+              </div>
+              <br>
+              <button type="button" class="btn sendRecipe active">Envoyer la recette</button>
+            </form>
+        </div>`;
+    document
+      .querySelector(".add-etape")!
+      .addEventListener("click", function () {
+        const inputEtape = document.querySelector(
+          ".input-etape",
+        ) as HTMLElement;
+        const newEtape = document.createElement("div");
+        newEtape.innerHTML = `
+        <textarea name="etapes" placeholder="Etapes de la recette" required></textarea>
+        <button class="delete-etape-btn">  -  </button>
+        `;
+        inputEtape.insertBefore(newEtape, document.querySelector(".add-etape"));
+        newEtape.children[1].addEventListener("click", function () {
+          inputEtape.removeChild(newEtape);
+        });
+      });
     recipeModal.classList.add("active");
     document.querySelector("body")!.classList.add("fixed");
     document.querySelector("main")!.classList.add("invisible");
@@ -195,16 +238,24 @@ function toggleFormRecipe(token: string | null, role: "admin" | null): void {
       const description = (
         document.querySelector('[name="description"]') as HTMLTextAreaElement
       ).value;
-      const etapes = (
-        document.querySelector('[name="etapes"]') as HTMLInputElement
-      ).value;
+      const etapes = Array.from(
+        document.querySelectorAll(
+          '[name="etapes"]',
+        ) as NodeListOf<HTMLTextAreaElement>,
+      ).map((etape) => etape.value);
       const formData = new FormData();
       const recette = {
         title: title,
         description: description,
-        etapes: [etapes],
+        etapes: etapes,
       };
       formData.append("recette", JSON.stringify(recette));
+      const fileInput = document.querySelector(
+        '[name="file"]',
+      ) as HTMLInputElement;
+      if (fileInput.files && fileInput.files[0]) {
+        formData.append("file", fileInput.files[0]);
+      }
       const response = await fetch("http://localhost:3000/recettes", {
         method: "POST",
         headers: {
