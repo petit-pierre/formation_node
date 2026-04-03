@@ -177,6 +177,12 @@ btnLogout.addEventListener("click", function () {
     token = null;
     header.classList.remove("connected");
     header.classList.remove("adminHeader");
+    document.querySelector("body").classList.remove("fixed");
+    var recipeModal = document.querySelector(".recip-modal");
+    recipeModal.classList.remove("active");
+    recipeModal.classList.remove("add-recipe");
+    recipeModal.innerHTML = "";
+    document.querySelector("main").classList.remove("invisible");
     show(token, null);
 });
 function toggleModale() {
@@ -193,7 +199,6 @@ function toggleModale() {
 // Nous devons typer les variables attendu par notre fonction
 // Nous pouvons aussi typer la valeur attendu en retour
 function toggleFormRecipe(token, role) {
-    document.querySelector("nav").innerHTML = "\n        <div>\n          <a href=\"#top\"><strong>Cahier de recettes</strong></a>\n          <a href=\"#user-grid\" class=\"userAnchor\">\n            <span>| Gestion des utilisateurs</span>\n          </a>\n        </div>\n        <button class='btn active add-recipe'\">Ajouter une recette</button>\n        <button id=\"openLoginModal\" class=\"btn-login active btn\">\n          <p>Connexion</p>\n        </button>\n        <button id=\"openLoginModal\" class=\"btn-logout active btn\" onclick=\"disconect()\">\n          <p>Deconnexion</p>\n        </button>\n      ";
     document.querySelector(".add-recipe").addEventListener("click", function () {
         var recipeModal = document.querySelector(".recip-modal");
         recipeModal.classList.add("add-recipe");
@@ -292,20 +297,20 @@ function show(token, role) {
                         data.forEach(function (recette) {
                             var card = document.createElement("article");
                             card.classList.add("recipe-card");
-                            card.innerHTML = "\n                <div class=\"card\">\n                    <img src=\"https://img.youtube.com/vi/".concat(recette.youtube !== null ? recette.youtube : "uOQapO-2awo", "/mqdefault.jpg\" alt=\"").concat(recette.title, "\" loading=\"lazy\">\n                   ").concat(role === "admin"
-                                ? "<div class=\"buttonSection\">\n  <button id=\"".concat(recette.status, "\" class=\"mini-btn visibility\" value=\"").concat(recette.id, "\">\n    ").concat(recette.status === "visible"
+                            card.innerHTML = "\n        <div class=\"card\">\n          <img src=\"https://img.youtube.com/vi/".concat(recette.youtube !== null ? recette.youtube : "uOQapO-2awo", "/mqdefault.jpg\" alt=\"").concat(recette.title, "\" loading=\"lazy\">\n          ").concat(role === "admin"
+                                ? "<div class=\"buttonSection\">\n                <button id=\"".concat(recette.status, "\" class=\"mini-btn visibility\" value=\"").concat(recette.id, "\">\n                  ").concat(recette.status === "visible"
                                     ? "<img class=\"eye\" value=\"visible\" src=\"./assets/eye.png\">"
-                                    : "<img class=\"eye\" value=\"close\" src=\"./assets/noeye.png\">", "\n  </button>\n  <button class=\"mini-btn delette\" value=\"").concat(recette.id, "\"><img src=\"./assets/trash.png\"></button></div>\n")
-                                : "", "\n                <div class=\"card-content\">\n                    <h3>").concat(recette.title, "</h3>\n                    <p>").concat(recette.description, "</p>\n\n                        <button class=\"btn active btn-view\" value=\"").concat(recette.id, "\">\n                            Voir la recette\n                        </button>\n\n                </div>\n                </div>\n            ");
+                                    : "<img class=\"eye\" value=\"close\" src=\"./assets/noeye.png\">", "\n                </button>\n                <button class=\"mini-btn delette\" value=\"").concat(recette.id, "\"><img src=\"./assets/trash.png\">\n                </button>\n              </div>\n            ")
+                                : "", "\n            <div class=\"card-content\">\n              <h3>").concat(recette.title, "</h3>\n              <p>").concat(recette.description, "</p>\n              <button class=\"btn active btn-view\" value=\"").concat(recette.id, "\">\n                Voir la recette\n              </button>\n            </div>\n          </div>\n      ");
                             document.querySelector(".recipe-grid").appendChild(card);
                             card.addEventListener("click", function (e) {
                                 if (e.target.classList.contains("btn-view")) {
                                     document.querySelector(".recip-modal").innerHTML =
-                                        "<article><h2>".concat(recette.title, "</h2>\n          <br>\n          <p>").concat(recette.description, "</p>\n          <br>\n          <ul>\n          ").concat(recette.etapes
+                                        "<article><h2>".concat(recette.title, "</h2>\n            <br>\n            <p>").concat(recette.description, "</p>\n            <br>\n            <ul>\n            ").concat(recette.etapes
                                             .map(function (etape) {
                                             return "<li>".concat(etape, "</li>");
                                         })
-                                            .join(""), "\n          </ul>\n          <br>\n          <button class=\"btn closeRecip active\">Close</button></article>\n          <iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/").concat(recette.youtube, "\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>");
+                                            .join(""), "\n            </ul>\n            <br>\n            <button class=\"btn closeRecip active\">Close</button>\n          </article>\n          <iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/").concat(recette.youtube, "\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen>\n          </iframe>");
                                     var recipeModal = document.querySelector(".recip-modal");
                                     recipeModal.classList.add("active");
                                     recipeModal.classList.remove("add-recipe");

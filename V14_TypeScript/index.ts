@@ -162,6 +162,12 @@ btnLogout.addEventListener("click", function () {
   token = null;
   header.classList.remove("connected");
   header.classList.remove("adminHeader");
+  document.querySelector("body")!.classList.remove("fixed");
+  const recipeModal = document.querySelector(".recip-modal") as HTMLElement;
+  recipeModal.classList.remove("active");
+  recipeModal.classList.remove("add-recipe");
+  recipeModal.innerHTML = "";
+  document.querySelector("main")!.classList.remove("invisible");
   show(token, null);
 });
 
@@ -180,21 +186,6 @@ function toggleModale() {
 // Nous devons typer les variables attendu par notre fonction
 // Nous pouvons aussi typer la valeur attendu en retour
 function toggleFormRecipe(token: string | null, role: "admin" | null): void {
-  document.querySelector("nav")!.innerHTML = `
-        <div>
-          <a href="#top"><strong>Cahier de recettes</strong></a>
-          <a href="#user-grid" class="userAnchor">
-            <span>| Gestion des utilisateurs</span>
-          </a>
-        </div>
-        <button class='btn active add-recipe'">Ajouter une recette</button>
-        <button id="openLoginModal" class="btn-login active btn">
-          <p>Connexion</p>
-        </button>
-        <button id="openLoginModal" class="btn-logout active btn" onclick="disconect()">
-          <p>Deconnexion</p>
-        </button>
-      `;
   document.querySelector(".add-recipe")!.addEventListener("click", function () {
     let recipeModal = document.querySelector(".recip-modal") as HTMLElement;
     recipeModal.classList.add("add-recipe");
@@ -330,51 +321,53 @@ async function show(token: string | null, role: "admin" | null): Promise<void> {
       const card = document.createElement("article");
       card.classList.add("recipe-card");
       card.innerHTML = `
-                <div class="card">
-                    <img src="https://img.youtube.com/vi/${recette.youtube !== null ? recette.youtube : "uOQapO-2awo"}/mqdefault.jpg" alt="${recette.title}" loading="lazy">
-                   ${
-                     role === "admin"
-                       ? `<div class="buttonSection">
-  <button id="${recette.status}" class="mini-btn visibility" value="${recette.id}">
-    ${
-      recette.status === "visible"
-        ? `<img class="eye" value="visible" src="./assets/eye.png">`
-        : `<img class="eye" value="close" src="./assets/noeye.png">`
-    }
-  </button>
-  <button class="mini-btn delette" value="${recette.id}"><img src="./assets/trash.png"></button></div>
-`
-                       : ""
-                   }
-                <div class="card-content">
-                    <h3>${recette.title}</h3>
-                    <p>${recette.description}</p>
-
-                        <button class="btn active btn-view" value="${recette.id}">
-                            Voir la recette
-                        </button>
-
-                </div>
-                </div>
-            `;
+        <div class="card">
+          <img src="https://img.youtube.com/vi/${recette.youtube !== null ? recette.youtube : "uOQapO-2awo"}/mqdefault.jpg" alt="${recette.title}" loading="lazy">
+          ${
+            role === "admin"
+              ? `<div class="buttonSection">
+                <button id="${recette.status}" class="mini-btn visibility" value="${recette.id}">
+                  ${
+                    recette.status === "visible"
+                      ? `<img class="eye" value="visible" src="./assets/eye.png">`
+                      : `<img class="eye" value="close" src="./assets/noeye.png">`
+                  }
+                </button>
+                <button class="mini-btn delette" value="${recette.id}"><img src="./assets/trash.png">
+                </button>
+              </div>
+            `
+              : ""
+          }
+            <div class="card-content">
+              <h3>${recette.title}</h3>
+              <p>${recette.description}</p>
+              <button class="btn active btn-view" value="${recette.id}">
+                Voir la recette
+              </button>
+            </div>
+          </div>
+      `;
       document.querySelector(".recipe-grid")!.appendChild(card);
       card.addEventListener("click", function (e) {
         if ((e.target as HTMLButtonElement).classList.contains("btn-view")) {
           document.querySelector(".recip-modal")!.innerHTML =
             `<article><h2>${recette.title}</h2>
-          <br>
-          <p>${recette.description}</p>
-          <br>
-          <ul>
-          ${recette.etapes
-            .map((etape) => {
-              return `<li>${etape}</li>`;
-            })
-            .join("")}
-          </ul>
-          <br>
-          <button class="btn closeRecip active">Close</button></article>
-          <iframe width="560" height="315" src="https://www.youtube.com/embed/${recette.youtube}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
+            <br>
+            <p>${recette.description}</p>
+            <br>
+            <ul>
+            ${recette.etapes
+              .map((etape) => {
+                return `<li>${etape}</li>`;
+              })
+              .join("")}
+            </ul>
+            <br>
+            <button class="btn closeRecip active">Close</button>
+          </article>
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/${recette.youtube}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+          </iframe>`;
           let recipeModal = document.querySelector(
             ".recip-modal",
           ) as HTMLElement;

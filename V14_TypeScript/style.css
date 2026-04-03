@@ -73,12 +73,18 @@ body header .btn-login {
 body header.adminHeader .userAnchor {
   display: block;
 }
+body header .add-recipe {
+  display: none;
+}
 body header.connected .btn-logout {
   margin-left: 2vw;
   display: block;
 }
 body header.connected .btn-login {
   display: none;
+}
+body header.connected .add-recipe {
+  display: block;
 }
 body header nav {
   min-height: 2vw;

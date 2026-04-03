@@ -68,6 +68,9 @@ body {
         display: block;
       }
     }
+    .add-recipe {
+      display: none;
+    }
     &.connected {
       .btn-logout {
         margin-left: 2vw;
@@ -75,6 +78,9 @@ body {
       }
       .btn-login {
         display: none;
+      }
+      .add-recipe {
+        display: block;
       }
     }
     nav {
