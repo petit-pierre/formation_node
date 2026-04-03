@@ -353,6 +353,13 @@ body {
         }
       }
     }
+    #modal-media {
+      width: 50%;
+      height: fit-content;
+      img {
+        width: 100%;
+      }
+    }
     iframe {
       border-radius: 1vw;
       overflow: hidden;

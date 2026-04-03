@@ -352,6 +352,14 @@ body .recip-modal.add-recipe .btn-recipe {
 body .recip-modal.add-recipe .btn-recipe:hover {
   background: rgba(238, 231, 236, 0.2666666667);
 }
+body .recip-modal #modal-media {
+  width: 50%;
+  height: -moz-fit-content;
+  height: fit-content;
+}
+body .recip-modal #modal-media img {
+  width: 100%;
+}
 body .recip-modal iframe {
   border-radius: 1vw;
   overflow: hidden;

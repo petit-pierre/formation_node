@@ -271,7 +271,7 @@ function toggleFormRecipe(token, role) {
 }
 function show(token, role) {
     return __awaiter(this, void 0, void 0, function () {
-        var response, _a, data;
+        var response, _a, data, recipeGrid_1;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -293,24 +293,77 @@ function show(token, role) {
                 case 5:
                     data = _b.sent();
                     if (response.ok) {
-                        document.querySelector(".recipe-grid").innerHTML = "";
+                        recipeGrid_1 = document.querySelector(".recipe-grid");
+                        recipeGrid_1.innerHTML = ""; // On vide la grille
                         data.forEach(function (recette) {
                             var card = document.createElement("article");
                             card.classList.add("recipe-card");
-                            card.innerHTML = "\n        <div class=\"card\">\n          <img src=\"https://img.youtube.com/vi/".concat(recette.youtube !== null ? recette.youtube : "uOQapO-2awo", "/mqdefault.jpg\" alt=\"").concat(recette.title, "\" loading=\"lazy\">\n          ").concat(role === "admin"
-                                ? "<div class=\"buttonSection\">\n                <button id=\"".concat(recette.status, "\" class=\"mini-btn visibility\" value=\"").concat(recette.id, "\">\n                  ").concat(recette.status === "visible"
-                                    ? "<img class=\"eye\" value=\"visible\" src=\"./assets/eye.png\">"
-                                    : "<img class=\"eye\" value=\"close\" src=\"./assets/noeye.png\">", "\n                </button>\n                <button class=\"mini-btn delette\" value=\"").concat(recette.id, "\"><img src=\"./assets/trash.png\">\n                </button>\n              </div>\n            ")
-                                : "", "\n            <div class=\"card-content\">\n              <h3>").concat(recette.title, "</h3>\n              <p>").concat(recette.description, "</p>\n              <button class=\"btn active btn-view\" value=\"").concat(recette.id, "\">\n                Voir la recette\n              </button>\n            </div>\n          </div>\n      ");
-                            document.querySelector(".recipe-grid").appendChild(card);
+                            // 1. Structure statique (Squelette)
+                            // On met des identifiants ou classes pour l'injection
+                            card.innerHTML = "\n    <div class=\"card\">\n      <img class=\"recipe-img\" loading=\"lazy\">\n      <div class=\"admin-section\"></div>\n      <div class=\"card-content\">\n        <h3 class=\"recipe-title\"></h3>\n        <p class=\"recipe-desc\"></p>\n        <button class=\"btn active btn-view\">\n          Voir la recette\n        </button>\n      </div>\n    </div>\n  ";
+                            // 2. Injection sécurisée des données (innerText / Attributes)
+                            // Image (Source dynamique)
+                            var img = card.querySelector(".recipe-img");
+                            var youtubeId = recette.youtube !== null ? recette.youtube : "uOQapO-2awo";
+                            img.src = "https://img.youtube.com/vi/".concat(youtubeId, "/mqdefault.jpg");
+                            img.alt = recette.title;
+                            // Textes (innerText pour la sécurité)
+                            card.querySelector(".recipe-title").innerText =
+                                recette.title;
+                            card.querySelector(".recipe-desc").innerText =
+                                recette.description;
+                            // Bouton voir (on ajoute la value)
+                            var viewBtn = card.querySelector(".btn-view");
+                            viewBtn.value = recette.id.toString();
+                            // 3. Section Admin (si rôle === admin)
+                            if (role === "admin") {
+                                var adminSection = card.querySelector(".admin-section");
+                                adminSection.innerHTML = "\n      <div class=\"buttonSection\">\n        <button class=\"mini-btn visibility\">\n          <img class=\"eye\">\n        </button>\n        <button class=\"mini-btn delette\">\n          <img src=\"./assets/trash.png\">\n        </button>\n      </div>\n    ";
+                                var visibilityBtn = adminSection.querySelector(".visibility");
+                                var eyeImg = adminSection.querySelector(".eye");
+                                var deleteBtn = adminSection.querySelector(".delette");
+                                // Configuration dynamique des boutons admin
+                                visibilityBtn.id = recette.status;
+                                visibilityBtn.value = recette.id.toString();
+                                deleteBtn.value = recette.id.toString();
+                                if (recette.status === "visible") {
+                                    eyeImg.src = "./assets/eye.png";
+                                    eyeImg.setAttribute("value", "visible");
+                                }
+                                else {
+                                    eyeImg.src = "./assets/noeye.png";
+                                    eyeImg.setAttribute("value", "close");
+                                }
+                            }
+                            recipeGrid_1.appendChild(card);
                             card.addEventListener("click", function (e) {
                                 if (e.target.classList.contains("btn-view")) {
-                                    document.querySelector(".recip-modal").innerHTML =
-                                        "<article><h2>".concat(recette.title, "</h2>\n            <br>\n            <p>").concat(recette.description, "</p>\n            <br>\n            <ul>\n            ").concat(recette.etapes
-                                            .map(function (etape) {
-                                            return "<li>".concat(etape, "</li>");
-                                        })
-                                            .join(""), "\n            </ul>\n            <br>\n            <button class=\"btn closeRecip active\">Close</button>\n          </article>\n          <iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/").concat(recette.youtube, "\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen>\n          </iframe>");
+                                    var modal = document.querySelector(".recip-modal");
+                                    // 1. On injecte la structure statique (SQUELETTE)
+                                    modal.innerHTML = "\n                              <article>\n                                <h2 id=\"modal-title\"></h2>\n                                <br>\n                                <p id=\"modal-desc\"></p>\n                                <br>\n                                <ul id=\"modal-steps\"></ul>\n                                <br>\n                                <button class=\"btn closeRecip active\">Close</button>\n                              </article>\n                              <div id=\"modal-media\"></div>\n                            ";
+                                    // 2. On injecte les données dynamiques avec innerText
+                                    modal.querySelector("#modal-title").innerText =
+                                        recette.title;
+                                    modal.querySelector("#modal-desc").innerText =
+                                        recette.description;
+                                    var stepsList_1 = modal.querySelector("#modal-steps");
+                                    recette.etapes.forEach(function (etape) {
+                                        var li = document.createElement("li");
+                                        li.innerText = etape;
+                                        stepsList_1.appendChild(li);
+                                    });
+                                    // 3. Gestion du média (iframe ou img)
+                                    var mediaContainer = modal.querySelector("#modal-media");
+                                    if (recette.youtube) {
+                                        mediaContainer.innerHTML = "\n    <iframe width=\"560\" height=\"315\" \n      src=\"https://www.youtube.com/embed/".concat(recette.youtube, "\" \n      title=\"YouTube video player\" frameborder=\"0\" \n      allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" \n      referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen>\n    </iframe>");
+                                    }
+                                    else {
+                                        var img_1 = document.createElement("img");
+                                        img_1.className = "image";
+                                        img_1.src = recette.imageUrl || "./assets/cake.jpg";
+                                        img_1.alt = recette.title;
+                                        mediaContainer.appendChild(img_1);
+                                    }
                                     var recipeModal = document.querySelector(".recip-modal");
                                     recipeModal.classList.add("active");
                                     recipeModal.classList.remove("add-recipe");

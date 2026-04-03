@@ -316,58 +316,134 @@ async function show(token: string | null, role: "admin" | null): Promise<void> {
 
   const data: Recipe[] = await response.json();
   if (response.ok) {
-    (document.querySelector(".recipe-grid") as HTMLElement).innerHTML = "";
+    const recipeGrid = document.querySelector(".recipe-grid") as HTMLElement;
+    recipeGrid.innerHTML = "";
+
     data.forEach((recette) => {
       const card = document.createElement("article");
       card.classList.add("recipe-card");
+
+      // 1. Structure statique (Squelette)
+      // On met des identifiants ou classes pour l'injection
       card.innerHTML = `
-        <div class="card">
-          <img src="https://img.youtube.com/vi/${recette.youtube !== null ? recette.youtube : "uOQapO-2awo"}/mqdefault.jpg" alt="${recette.title}" loading="lazy">
-          ${
-            role === "admin"
-              ? `<div class="buttonSection">
-                <button id="${recette.status}" class="mini-btn visibility" value="${recette.id}">
-                  ${
-                    recette.status === "visible"
-                      ? `<img class="eye" value="visible" src="./assets/eye.png">`
-                      : `<img class="eye" value="close" src="./assets/noeye.png">`
-                  }
-                </button>
-                <button class="mini-btn delette" value="${recette.id}"><img src="./assets/trash.png">
-                </button>
-              </div>
-            `
-              : ""
-          }
-            <div class="card-content">
-              <h3>${recette.title}</h3>
-              <p>${recette.description}</p>
-              <button class="btn active btn-view" value="${recette.id}">
-                Voir la recette
-              </button>
-            </div>
-          </div>
-      `;
-      document.querySelector(".recipe-grid")!.appendChild(card);
+                        <div class="card">
+                          <img class="recipe-img" loading="lazy">
+                          <div class="admin-section"></div>
+                          <div class="card-content">
+                            <h3 class="recipe-title"></h3>
+                            <p class="recipe-desc"></p>
+                            <button class="btn active btn-view">
+                              Voir la recette
+                            </button>
+                          </div>
+                        </div>
+                      `;
+
+      // 2. Injection sécurisée des données (innerText / Attributes)
+
+      // Image (Source dynamique)
+      const img = card.querySelector(".recipe-img") as HTMLImageElement;
+      const youtubeId =
+        recette.youtube !== null ? recette.youtube : "uOQapO-2awo";
+      img.src = `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`;
+      img.alt = recette.title;
+
+      // Textes (innerText pour la sécurité)
+      card.querySelector<HTMLElement>(".recipe-title")!.innerText =
+        recette.title;
+      card.querySelector<HTMLElement>(".recipe-desc")!.innerText =
+        recette.description;
+
+      // Bouton voir (on ajoute la value)
+      const viewBtn = card.querySelector(".btn-view") as HTMLButtonElement;
+      viewBtn.value = recette.id.toString();
+
+      // 3. Section Admin (si rôle === admin)
+      if (role === "admin") {
+        const adminSection = card.querySelector(".admin-section")!;
+        adminSection.innerHTML = `
+      <div class="buttonSection">
+        <button class="mini-btn visibility">
+          <img class="eye">
+        </button>
+        <button class="mini-btn delette">
+          <img src="./assets/trash.png">
+        </button>
+      </div>
+    `;
+
+        const visibilityBtn = adminSection.querySelector(
+          ".visibility",
+        ) as HTMLButtonElement;
+        const eyeImg = adminSection.querySelector(".eye") as HTMLImageElement;
+        const deleteBtn = adminSection.querySelector(
+          ".delette",
+        ) as HTMLButtonElement;
+
+        // Configuration dynamique des boutons admin
+        visibilityBtn.id = recette.status;
+        visibilityBtn.value = recette.id.toString();
+        deleteBtn.value = recette.id.toString();
+
+        if (recette.status === "visible") {
+          eyeImg.src = "./assets/eye.png";
+          eyeImg.setAttribute("value", "visible");
+        } else {
+          eyeImg.src = "./assets/noeye.png";
+          eyeImg.setAttribute("value", "close");
+        }
+      }
+
+      recipeGrid.appendChild(card);
+
       card.addEventListener("click", function (e) {
         if ((e.target as HTMLButtonElement).classList.contains("btn-view")) {
-          document.querySelector(".recip-modal")!.innerHTML =
-            `<article><h2>${recette.title}</h2>
-            <br>
-            <p>${recette.description}</p>
-            <br>
-            <ul>
-            ${recette.etapes
-              .map((etape) => {
-                return `<li>${etape}</li>`;
-              })
-              .join("")}
-            </ul>
-            <br>
-            <button class="btn closeRecip active">Close</button>
-          </article>
-          <iframe width="560" height="315" src="https://www.youtube.com/embed/${recette.youtube}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
-          </iframe>`;
+          const modal = document.querySelector(".recip-modal")!;
+
+          // 1. On injecte la structure statique (SQUELETTE)
+          modal.innerHTML = `
+                              <article>
+                                <h2 id="modal-title"></h2>
+                                <br>
+                                <p id="modal-desc"></p>
+                                <br>
+                                <ul id="modal-steps"></ul>
+                                <br>
+                                <button class="btn closeRecip active">Close</button>
+                              </article>
+                              <div id="modal-media"></div>
+                            `;
+
+          // 2. On injecte les données dynamiques avec innerText
+          modal.querySelector<HTMLElement>("#modal-title")!.innerText =
+            recette.title;
+          modal.querySelector<HTMLElement>("#modal-desc")!.innerText =
+            recette.description;
+
+          const stepsList = modal.querySelector("#modal-steps")!;
+          recette.etapes.forEach((etape) => {
+            const li = document.createElement("li");
+            li.innerText = etape;
+            stepsList.appendChild(li);
+          });
+
+          // 3. Gestion du média (iframe ou img)
+          const mediaContainer = modal.querySelector("#modal-media")!;
+          if (recette.youtube) {
+            mediaContainer.innerHTML = `
+    <iframe width="560" height="315" 
+      src="https://www.youtube.com/embed/${recette.youtube}" 
+      title="YouTube video player" frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+      referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+    </iframe>`;
+          } else {
+            const img = document.createElement("img");
+            img.className = "image";
+            img.src = recette.imageUrl || "./assets/cake.jpg";
+            img.alt = recette.title;
+            mediaContainer.appendChild(img);
+          }
           let recipeModal = document.querySelector(
             ".recip-modal",
           ) as HTMLElement;
