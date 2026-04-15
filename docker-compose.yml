@@ -1,0 +1,74 @@
+services:
+  frontend:
+    build: ./front_end
+    container_name: front
+    ports:
+      - "80:80"
+    restart: always
+    depends_on:
+      - api
+
+  api:
+    build: ./back_end
+    container_name: api
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./back_end:/usr/src/app
+      - /usr/src/app/node_modules
+    env_file:
+      - ./back_end/.env
+    depends_on:
+      - cache
+      - db
+
+  worker:
+    build: ./back_end
+    container_name: worker
+    restart: always
+    command: nodemon -L ./workers/mediaWorker.js
+    volumes:
+      - ./back_end:/usr/src/app
+      - /usr/src/app/node_modules
+    env_file:
+      - ./back_end/.env
+    depends_on:
+      - cache
+      - db
+
+  cron:
+    build: ./back_end
+    container_name: cron
+    restart: always
+    command: nodemon -L ./utils/cron.js
+    volumes:
+      - ./back_end:/usr/src/app
+      - /usr/src/app/node_modules
+    env_file:
+      - ./back_end/.env
+    depends_on:
+      - db
+      - cache
+
+  cache:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  db:
+    image: mysql:8.0
+    container_name: db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: recettes
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./back_end/recettes.sql:/docker-entrypoint-initdb.d/recettes.sql
+
+volumes:
+  db_data:

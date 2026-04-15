@@ -6,7 +6,7 @@
 .git/
 .gitignore
 
-# Environnement (Sécurité : ne pas embarquer tes clés API en dur dans l'image)
+# Environnement (Sécurité : ne pas embarquer les clés API en dur dans l'image)
 .env
 .env.local
 .env.production
