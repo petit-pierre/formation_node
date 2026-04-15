@@ -8,8 +8,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "pm2 start V12_CRON/ecosystem.config.js",
-    "stop": "pm2 stop V12_CRON/ecosystem.config.js",
+    "start": "pm2 start back_end/ecosystem.config.js",
+    "stop": "pm2 stop back_end/ecosystem.config.js",
     "api:logs": "pm2 logs"
   },
   "dependencies": {

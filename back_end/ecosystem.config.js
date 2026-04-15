@@ -11,18 +11,18 @@ module.exports = {
   apps: [
     {
       name: "api-server",
-      script: "./V12_CRON/server.js",
+      script: "./back_end/server.js",
       watch: true,
       ignore_watch: ["node_modules", "logs", "public"],
     },
     {
       name: "worker-bullmq",
-      script: "./V12_CRON/workers/mediaWorker.js",
+      script: "./back_end/workers/mediaWorker.js",
       watch: true,
     },
     {
       name: "cron-jobs",
-      script: "./V12_CRON/utils/cron.js",
+      script: "./back_end/utils/cron.js",
       watch: true,
     },
   ],
