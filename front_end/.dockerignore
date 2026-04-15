@@ -1,0 +1,21 @@
+*.ts
+*.css.map
+*.scss
+
+# Git
+.git/
+.gitignore
+
+# Environnement (Sécurité : ne pas embarquer tes clés API en dur dans l'image)
+.env
+.env.local
+.env.production
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Docker (pas besoin de copier les fichiers Docker dans le container lui-même)
+Dockerfile
+docker-compose.yml
+.dockerignore

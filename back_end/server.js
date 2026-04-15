@@ -1,11 +1,3 @@
-// npm i pm2 -g
-// npm i node-cron
-// docker run -d --name redis-api -p 6379:6379 redis
-// npm start --> demmare tout les services
-// npm stop --> stop tout les services
-// pm2 logs --> affiche les retours console
-// !! les chemain seront maintenant relatifs a la racine du repo !!
-
 const http = require("http");
 const app = require("./app");
 
